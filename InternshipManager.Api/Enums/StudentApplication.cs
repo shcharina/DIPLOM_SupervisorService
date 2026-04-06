@@ -1,6 +1,6 @@
 namespace InternshipManager.Api.Enums;
 
-public enum StudentSupervisorApplicationStatus
+public enum StudentApplicationStatus
 {
     НаРассмотренииРуководителем = 1,
     Отказано = 2,

@@ -1,10 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "ou5pHX30wgg=",
+  "dgSpecHash": "Y6rJK1v+GqE=",
   "success": true,
   "projectFilePath": "D:\\urepalic\\OUR_DIPLOME_PROJECT\\InternshipManager\\InternshipManager.Api\\InternshipManager.Api.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\urepalic\\.nuget\\packages\\asp.versioning.abstractions\\8.1.0\\asp.versioning.abstractions.8.1.0.nupkg.sha512",
+    "C:\\Users\\urepalic\\.nuget\\packages\\asp.versioning.http\\8.1.1\\asp.versioning.http.8.1.1.nupkg.sha512",
+    "C:\\Users\\urepalic\\.nuget\\packages\\asp.versioning.mvc\\8.1.1\\asp.versioning.mvc.8.1.1.nupkg.sha512",
+    "C:\\Users\\urepalic\\.nuget\\packages\\asp.versioning.mvc.apiexplorer\\8.1.1\\asp.versioning.mvc.apiexplorer.8.1.1.nupkg.sha512",
     "C:\\Users\\urepalic\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
+    "C:\\Users\\urepalic\\.nuget\\packages\\microsoft.aspnetcore.mvc.versioning\\5.1.0\\microsoft.aspnetcore.mvc.versioning.5.1.0.nupkg.sha512",
     "C:\\Users\\urepalic\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.5\\microsoft.aspnetcore.openapi.10.0.5.nupkg.sha512",
     "C:\\Users\\urepalic\\.nuget\\packages\\microsoft.build.framework\\18.0.2\\microsoft.build.framework.18.0.2.nupkg.sha512",
     "C:\\Users\\urepalic\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\3.11.0\\microsoft.codeanalysis.analyzers.3.11.0.nupkg.sha512",

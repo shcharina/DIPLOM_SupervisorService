@@ -123,3 +123,8 @@ D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\obj\Debu
 D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\obj\Debug\net10.0\InternshipManager.Api.pdb
 D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\obj\Debug\net10.0\InternshipManager.Api.genruntimeconfig.cache
 D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\obj\Debug\net10.0\ref\InternshipManager.Api.dll
+D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\bin\Debug\net10.0\Microsoft.AspNetCore.Mvc.Versioning.dll
+D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\bin\Debug\net10.0\Asp.Versioning.Abstractions.dll
+D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\bin\Debug\net10.0\Asp.Versioning.Http.dll
+D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\bin\Debug\net10.0\Asp.Versioning.Mvc.dll
+D:\urepalic\OUR_DIPLOME_PROJECT\InternshipManager\InternshipManager.Api\bin\Debug\net10.0\Asp.Versioning.Mvc.ApiExplorer.dll

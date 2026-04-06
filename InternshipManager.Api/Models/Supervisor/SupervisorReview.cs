@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using InternshipManager.Api.Enums;
 
 namespace InternshipManager.Api.Models.Supervisor;
 

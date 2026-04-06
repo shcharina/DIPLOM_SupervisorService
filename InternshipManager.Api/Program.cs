@@ -1,60 +1,63 @@
 using Microsoft.EntityFrameworkCore;
+using Asp.Versioning;
+
 using InternshipManager.Api.Data;
-using InternshipManager.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Добавляем контроллеры
-builder.Services.AddControllers();
+// Подключение к PostgreSQL
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Регистрация SharedDbContext (общая БД)
-builder.Services.AddDbContext<SharedDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("SharedConnection")));
-
-// Регистрация SupervisorDbContext (БД руководителя)
-builder.Services.AddDbContext<SupervisorDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("SupervisorConnection")));
-
-// Регистрация сервисов
-builder.Services.AddScoped<ISupervisorApplicationService, SupervisorApplicationService>();
-
-// CORS для Vue.js
-builder.Services.AddCors(options =>
+//Версионирование API
+builder.Services.AddApiVersioning(options =>
 {
-    options.AddPolicy("AllowVueFrontend", policy =>
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+// Swagger с версионированием
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new()
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        Title = "InternshipManager API",
+        Version = "v1"
     });
 });
 
-var app = builder.Build();
+// CORS для Vue фронта
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowVue", policy =>
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
 
+var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    });
 }
 
-app.UseHttpsRedirection();
-app.UseCors("AllowVueFrontend");
+app.UseCors("AllowVue");
+
 app.UseAuthorization();
-app.MapControllers();
 
-// Автоматическое применение миграций при запуске
-using (var scope = app.Services.CreateScope())
-{
-    var sharedDb = scope.ServiceProvider.GetRequiredService<SharedDbContext>();
-    var supervisorDb = scope.ServiceProvider.GetRequiredService<SupervisorDbContext>();
-    
-    sharedDb.Database.Migrate();
-    supervisorDb.Database.Migrate();
-}
+app.MapControllers();
 
 app.Run();
