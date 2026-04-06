@@ -106,15 +106,16 @@ public class InterviewSlotController : ControllerBase
 
     }
 
-    // PUT api/v1/InterviewSlot/{id}/publish
+    // PUT api/v1/InterviewSlot/{id}/publish?supervisorApplicationId={guid} - одна заявка
+    // PUT api/v1/InterviewSlot/{id}/publish - все заявки
 
-    // Публикация слота — становится доступным студентам
+    // Публикация слота - становится доступным студентам
 
     [HttpPut("{id}/publish")]
 
     public async Task<IActionResult> Publish(
         int id,
-        [FromQuery] Guid supervisorApplicationId)
+        [FromQuery] Guid? supervisorApplicationId = null)
     {
         var slot = await _context.InterviewSlots.FindAsync(id);
 
@@ -128,34 +129,56 @@ public class InterviewSlotController : ControllerBase
                 detail = "Публиковать можно только подтверждённые слоты"
             });
 
-        // Проверяем что заявка существует
-        var application = await _context.SupervisorApplications
-            .FirstOrDefaultAsync(a => a.IdSupervisorApplication == supervisorApplicationId);
+        List<Guid> eligibleStudents;
+        string scope;
+
+        if (supervisorApplicationId.HasValue)
+        {
+            // Проверяем что заявка существует
+            var application = await _context.SupervisorApplications
+                .FirstOrDefaultAsync(a =>
+                   a.IdSupervisorApplication == supervisorApplicationId);
+
+            if (application == null)
+                return NotFound(new { detail = "Заявка не найдена" });
+
+            eligibleStudents = await _context.StudentSupervisorApplications
+                .Where(s => 
+                    s.IdSupervisorApplication == supervisorApplicationId.Value &&
+                    s.Status == StudentSupervisorApplicationStatus.Собеседование)
+                    .Select(s => s.IdStudentApplication)
+                    .ToListAsync();
             
-        if (application == null)
-            return NotFound(new { detail = "Заявка не найдена" });
+            scope = $"по заявке {supervisorApplicationId.Value}";
+
+        }
+        else
+        {
+            var allApplicationIds = await _context.SupervisorApplications
+                .Where(a => a.IdEmployee == slot.IdEmployee)
+                .Select(a => a.IdSupervisorApplication)
+                .ToListAsync();
             
-        // Получаем студентов со статусом Собеседование по этой заявке
-        // Теперь работает правильно после исправления типа в модели
-        
-        var eligibleStudents = await _context.StudentSupervisorApplications
-            .Where(s => s.IdSupervisorApplication == supervisorApplicationId
-            && s.Status == StudentSupervisorApplicationStatus.Собеседование) // ✅ типы совпадают
-            .Select(s => s.IdStudentApplication)
-            .ToListAsync();
-            
+            eligibleStudents = await _context.StudentSupervisorApplications
+                .Where(s =>
+                    allApplicationIds.Contains(s.IdSupervisorApplication) &&
+                    s.Status == StudentSupervisorApplicationStatus.Собеседование)
+                    .Select(s => s.IdStudentApplication)
+                    .Distinct()
+                    .ToListAsync();
+                scope = "по всем заявкам руководителя";
+        }
+
         if (!eligibleStudents.Any())
             return BadRequest(new
             {
                 type = "business_error",
-                detail = "Нет студентов со статусом Собеседование по этой заявке"
+                detail = $"Нет студентов со статусом Собеседование {scope}"
             });
-        
-        
         
         // Привязываем слот к заявке
         
-        slot.IdSupervisorApplication = supervisorApplicationId;
+        slot.IdSupervisorApplication = supervisorApplicationId; // null если все заявки
 
         slot.Status = InterviewSlotStatus.Опубликован;
         slot.UpdatedAt = DateTime.UtcNow;
@@ -166,11 +189,11 @@ public class InterviewSlotController : ControllerBase
         {
             idInterviewSlot = slot.IdInterviewSlot,
             status = slot.Status,
-            supervisorApplicationId,
+            scope,
             // Сервис практиканта читает этот список и показывает слот этим студентам
             studentsToNotify = eligibleStudents,
             studentsCount = eligibleStudents.Count,
-            message = "Слот опубликован, доступен студентам"
+            message = "Слот опубликован для {eligibleStudents.Count} студентов {scope}"
         });
 
     }

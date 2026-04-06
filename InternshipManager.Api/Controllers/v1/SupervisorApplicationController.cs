@@ -6,6 +6,7 @@ using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
 using InternshipManager.Api.Models.Supervisor;
 using InternshipManager.Api.DTOs.SupervisorApplication;
+using InternshipManager.Api.Models.Shared;
 
 namespace InternshipManager.Api.Controllers;
 
@@ -157,6 +158,19 @@ public class SupervisorApplicationController : ControllerBase
 
 public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDto dto)
 {
+    var supervisor = await _context.Employees
+        .FirstOrDefaultAsync(e =>
+            e.IdEmployee == dto.SupervisorId &&
+            e.Role == EmployeeRole.Supervisor);
+
+    if (supervisor == null)
+        return NotFound(new
+        {
+            type = "not_found",
+            detail = "Руководитель с таким ID не найден"
+        }
+        );
+    
     int idSpecialization;
     DateTime? startDate;
     DateTime? endDate;

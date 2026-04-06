@@ -33,6 +33,13 @@ public class TimeIntervalController : ControllerBase
 
     public async Task<IActionResult> Create([FromBody] CreateTimeIntervalDto dto)
     {
+        if (dto.StartTime >= dto.EndTime)
+            return BadRequest(new
+            {
+                type = "validation_error",
+                detail = "Время окончания должно быть позже времени начала"
+            });
+            
         var interval = new TimeInterval
         {
             IdEmployee = dto.IdEmployee,

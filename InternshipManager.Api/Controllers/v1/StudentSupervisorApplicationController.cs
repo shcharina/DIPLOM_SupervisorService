@@ -27,10 +27,18 @@ public class StudentSupervisorApplicationController : ControllerBase
 
     [HttpGet("{supervisorApplicationId:guid}")]
 
-    public async Task<IActionResult> GetStudents(Guid supervisorApplicationId)
+    public async Task<IActionResult> GetStudents(
+        Guid supervisorApplicationId,
+        [FromQuery] StudentSupervisorApplicationStatus? status = null        )
     {
-        var students = await _context.StudentSupervisorApplications
-            .Where(s => s.IdSupervisorApplication == supervisorApplicationId)
+        var query = _context.StudentSupervisorApplications
+            .Where(s => s.IdSupervisorApplication == supervisorApplicationId);
+        
+        // Фильтр по статусу (необязательный)
+        if (status.HasValue)
+            query = query.Where(s => s.Status == status.Value);
+        
+        var students = await query
             .Select(s => new
             {
                 idStudentApplication = s.IdStudentApplication,
@@ -112,7 +120,6 @@ public class StudentSupervisorApplicationController : ControllerBase
             idStudentApplication = studentApplicationId,
             status = link.Status,
             message = "Студенту отказано"
-
         });
 
     }
