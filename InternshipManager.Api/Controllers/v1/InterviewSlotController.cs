@@ -202,6 +202,7 @@ public class InterviewSlotController : ControllerBase
 
     // Студент видит опубликованные слоты руководителя
 
+    /*
     [HttpGet("available/{supervisorId:guid}")]
 
     public async Task<IActionResult> GetAvailable(Guid supervisorId)
@@ -221,6 +222,7 @@ public class InterviewSlotController : ControllerBase
         return Ok(slots);
 
     }
+    */
 
 
 }
