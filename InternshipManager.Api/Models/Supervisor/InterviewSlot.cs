@@ -13,9 +13,11 @@ public class InterviewSlot
     [Required]
     public Guid IdEmployee { get; set; }  // Кто будет проводить собеседование
     
-    public Guid? IdCreator { get; set; }  // Кто создал этот слот
+    public Guid? IdCreator { get; set; }  // Кто создал этот слот (null = сам руководитель)
     
     public int IdInterval { get; set; }  // FK на TimeInterval
+
+    public Guid? IdSupervisorApplication { get; set; }
     
     [Required]
     public DateTime StartTime { get; set; }
@@ -28,6 +30,9 @@ public class InterviewSlot
     [MaxLength(255)]
     public string? MeetingPlace { get; set; }
     
+    [MaxLength(500)]
+    public string? RejectionComment { get; set; } // В случае отказа руководителем от предложенного слота
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     public DateTime? UpdatedAt { get; set; }

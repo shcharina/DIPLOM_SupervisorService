@@ -13,7 +13,7 @@ public class StudentSupervisorApplication
     
     public Guid IdStudentApplication { get; set; }  // ID заявки студента (из другой системы)
     
-    public StudentApplicationStatus Status { get; set; } = StudentApplicationStatus.НаРассмотренииРуководителем;
+    public StudentSupervisorApplicationStatus Status { get; set; } = StudentSupervisorApplicationStatus.НаРассмотренииРуководителем;
     
     public DateTime? AssignedAt { get; set; }
     
