@@ -23,9 +23,10 @@ public class SupervisorApplicationStatusService
         if (application == null) return;
 
         // Проверяем только активные заявки
-        if (application.Status != SupervisorApplicationStatus.Отправлена) return;
+        if (application.Status != SupervisorApplicationStatus.Отправлена &&
+            application.Status != SupervisorApplicationStatus.Удовлетворена) return;
 
-        // Считаем принятых студентов
+        // Считаем принятых студентов + тех, кто еще в процессе оформления
         var acceptedCount = await _context.StudentSupervisorApplications
             .CountAsync(s =>
                 s.IdSupervisorApplication == supervisorApplicationId &&
@@ -39,7 +40,16 @@ public class SupervisorApplicationStatusService
             application.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
+        else if(application.Status == SupervisorApplicationStatus.Удовлетворена)
+        {
+            // Студент отозвал заявку и количество стало меньше нужного
+            // То ставим обратно статус Отправлена
+            application.Status = SupervisorApplicationStatus.Отправлена;
+            application.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
 
     }
 
 }
+
