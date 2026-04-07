@@ -438,7 +438,6 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
 
     }
 
-
     // PUT api/v1/SupervisorApplication/{id}/close
 
     [HttpPut("{id:guid}/close")]
