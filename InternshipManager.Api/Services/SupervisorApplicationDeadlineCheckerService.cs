@@ -128,12 +128,14 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
                         "Руководитель {supervisor} должен оставить отзыв о студенте {student}",
                         application.IdEmployee,
                         student.IdStudentApplication);
+
+                    // тут потом добавить какую-нибудь функцию типа уведомление руководителю    
                 }
 
             }
 
         }
-        
+
     }
 
 }
