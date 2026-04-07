@@ -358,7 +358,7 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
     public async Task<IActionResult> Cancel(Guid id)
     {
         var application = await _context.SupervisorApplications.FindAsync(id);
-        
+
         if (application == null)
             return NotFound(new { detail = "Заявка не найдена" });
 
@@ -369,6 +369,52 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
                 type = "business_error",
                 detail = $"Нельзя отменить заявку в статусе {application.Status}"
             });
+
+        // Откреплям студентов которых ещё можно открепить
+        // (не трогаем тех у кого уже Принят или ОформлениеДокументов после проведённого собеседования)
+        var studentsToDetach = await _context.StudentSupervisorApplications
+            .Where(s =>
+                s.IdSupervisorApplication == id &&
+                s.Status != StudentSupervisorApplicationStatus.Отказано)
+            .ToListAsync();
+
+        foreach (var student in studentsToDetach)
+        {
+            student.Status = StudentSupervisorApplicationStatus.Отказано;
+            student.UpdatedAt = DateTime.UtcNow;
+        }
+
+        // Отменяем все слоты кроме тех где собеседование уже проведено
+
+        var allSlots = await _context.InterviewSlots
+            .Where(s =>
+                s.IdSupervisorApplication == id &&
+                s.Status != InterviewSlotStatus.Отменен)
+            .Include(s => s.Interview)  // подгружаем связанное собеседование
+            .ToListAsync();
+
+        int cancelledSlots = 0;
+        int skippedSlots = 0;
+        foreach (var slot in allSlots)
+        {
+            if (slot.Status == InterviewSlotStatus.Занят && slot.Interview != null)
+            {
+                // Собеседование уже проведено (есть результат) → оставляем
+                if (slot.Interview.UpdatedAt != null)
+                {
+                    skippedSlots++;
+                    continue;
+                }
+
+                // Собеседование назначено но НЕ проведено → отменяем всё
+                // Удаляем запись о собеседовании
+                _context.Interviews.Remove(slot.Interview);
+            }
+
+            slot.Status = InterviewSlotStatus.Отменен;
+            slot.UpdatedAt = DateTime.UtcNow;
+            cancelledSlots++;
+        }
 
         var previousStatus = application.Status;
         application.Status = SupervisorApplicationStatus.Отменена;
@@ -381,10 +427,17 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
             idSupervisorApplication = application.IdSupervisorApplication,
             status = application.Status,
             previousStatus,
-            message = "Заявка отменена"
+            detachedStudents = studentsToDetach.Count,
+            cancelledSlots,
+            skippedSlots,  // слоты где собеседование уже состоялось
+            message = $"Заявка отменена. " +
+                      $"Откреплено студентов: {studentsToDetach.Count}. " +
+                      $"Отменено слотов: {cancelledSlots}. " +
+                      $"Сохранено проведённых собеседований: {skippedSlots}"
         });
 
     }
+
 
     // PUT api/v1/SupervisorApplication/{id}/close
 

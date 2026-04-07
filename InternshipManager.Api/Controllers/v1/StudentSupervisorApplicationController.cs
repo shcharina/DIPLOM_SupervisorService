@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
 using InternshipManager.Api.Services;
+using System.Reflection.Metadata.Ecma335;
 
 namespace InternshipManager.Api.Controllers;
 
@@ -72,6 +73,14 @@ public class StudentSupervisorApplicationController : ControllerBase
         if (link == null)
             return NotFound(new { detail = "Связка студент-заявка не найдена" });
 
+        // проверка что студент не отозвал заявку
+        if (link.Status == StudentSupervisorApplicationStatus.Отказано)
+            return BadRequest(new
+            {
+                type = "business_error",
+                detail = "Студент отозвал заявку, дальнейшая работа с ним невозможна"
+            });
+
         if (link.Status != StudentSupervisorApplicationStatus.НаРассмотренииРуководителем)
             return BadRequest(new
             {
@@ -115,6 +124,15 @@ public class StudentSupervisorApplicationController : ControllerBase
 
         if (link == null)
             return NotFound(new { detail = "Связка студент-заявка не найдена" });
+
+        // Проверка что студент не отозвал заявку
+
+        if (link.Status == StudentSupervisorApplicationStatus.Отказано)
+            return BadRequest(new
+            {
+                type = "bisuness_error",
+                detail = "Студент отозвал заявку, дальнейшая работа с ним невозможна"
+            });
 
         if (link.Status != StudentSupervisorApplicationStatus.НаРассмотренииРуководителем)
             return BadRequest(new
