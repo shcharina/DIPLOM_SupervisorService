@@ -103,6 +103,7 @@ public class InterviewController : ControllerBase
         [FromBody] RecordInterviewResultDto dto)
     {
         var interview = await _context.Interviews.FindAsync(id);
+
         if (interview == null)
             return NotFound(new { detail = "Собеседование не найдено" });
 
@@ -111,9 +112,9 @@ public class InterviewController : ControllerBase
         interview.Comment = dto.Comment;
         interview.UpdatedAt = DateTime.UtcNow;
 
-        // Находим связку студент-заявка чтобы обновить статус
+        // Находим связку студент-заявка
         var slot = await _context.InterviewSlots.FindAsync(id);
-        
+
         if (slot?.IdSupervisorApplication != null)
         {
             var link = await _context.StudentSupervisorApplications
@@ -123,11 +124,18 @@ public class InterviewController : ControllerBase
 
             if (link != null)
             {
+                // проверка, что студент не отозвал заявку
+                if (link.Status == StudentSupervisorApplicationStatus.Отказано)
+                    return BadRequest(new
+                    {
+                        type = "business_error",
+                        detail = "Студент отозвал заявку, результат собеседования записать невозможно"
+                    });
+
                 link.Status = dto.Result
                     ? StudentSupervisorApplicationStatus.ОформлениеДокументов
                     : StudentSupervisorApplicationStatus.Отказано;
                 link.UpdatedAt = DateTime.UtcNow;
-                
             }
 
             await _context.SaveChangesAsync();
@@ -147,7 +155,7 @@ public class InterviewController : ControllerBase
             newStudentStatus = dto.Result
                 ? StudentSupervisorApplicationStatus.ОформлениеДокументов.ToString()
                 : StudentSupervisorApplicationStatus.Отказано.ToString(),
-                message = dto.Result
+            message = dto.Result
                 ? "Собеседование пройдено, студент переходит к оформлению документов"
                 : "Собеседование не пройдено, студенту отказано"
 
