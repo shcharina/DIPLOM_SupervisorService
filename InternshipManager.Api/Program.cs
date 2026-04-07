@@ -2,12 +2,19 @@ using Microsoft.EntityFrameworkCore;
 using Asp.Versioning;
 
 using InternshipManager.Api.Data;
+using InternshipManager.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Подключение к PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Вспомогательный сервис проверки статуса
+builder.Services.AddScoped<SupervisorApplicationStatusService>();
+
+// Фоновая задача проверки дат
+builder.Services.AddHostedService<SupervisorApplicationDeadlineCheckerService>();
 
 //Версионирование API
 builder.Services.AddApiVersioning(options =>
