@@ -88,9 +88,27 @@ public class StudentSupervisorApplicationController : ControllerBase
                 detail = $"Нельзя принять студента в статусе {link.Status}"
             });
 
+        var currentAccepted = await _context.StudentSupervisorApplications
+            .CountAsync(s =>
+                s.IdSupervisorApplication == supervisorApplicationId &&
+                (s.Status == StudentSupervisorApplicationStatus.ОформлениеДокументов ||
+                 s.Status == StudentSupervisorApplicationStatus.Принят));
+
+        var application = await _context.SupervisorApplications
+            .FirstOrDefaultAsync(a => 
+                a.IdSupervisorApplication == supervisorApplicationId);
+
+        if (application != null && 
+            currentAccepted >= application.RequestedStudentsCount)
+            return BadRequest(new
+            {
+                type = "business_error",
+                detail = "Заявка уже набрала необходимое количество студентов"
+            });
+
         link.Status = StudentSupervisorApplicationStatus.ОформлениеДокументов;
         link.UpdatedAt = DateTime.UtcNow;
-
+        
         await _context.SaveChangesAsync();
 
         // Автоматическая проверка статуса заявки
