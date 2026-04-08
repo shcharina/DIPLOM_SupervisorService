@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InternshipManager.Api.Models.Shared;
 
 public class Department
 {
     [Key]
-    public int IdDepartment { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public DepartmentId IdDepartment { get; set; }
     
     [Required]
     [MaxLength(255)]

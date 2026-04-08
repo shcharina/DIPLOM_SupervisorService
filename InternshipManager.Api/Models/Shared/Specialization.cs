@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InternshipManager.Api.Models.Shared;
 
 public class Specialization
 {
     [Key]
-    public int IdSpecialization { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public SpecializationId IdSpecialization { get; set; }
     
     [Required]
     [MaxLength(255)]

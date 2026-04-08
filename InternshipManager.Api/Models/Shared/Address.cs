@@ -6,10 +6,11 @@ namespace InternshipManager.Api.Models.Shared;
 public class Address
 {
     [Key]
-    public int IdAddress { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public AddressId IdAddress { get; set; }
     
     [Required]
-    public int IdDepartment { get; set; }
+    public DepartmentId IdDepartment { get; set; }
     
     [Required]
     [MaxLength(255)]

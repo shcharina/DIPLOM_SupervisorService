@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InternshipManager.Api.Models.Shared;
 
 public class PracticeType
 {
     [Key]
-    public int IdPracticeType { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public PracticeTypeId IdPracticeType { get; set; }
     
     [Required]
     [MaxLength(255)]

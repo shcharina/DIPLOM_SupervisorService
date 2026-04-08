@@ -7,9 +7,9 @@ namespace InternshipManager.Api.Models.Supervisor;
 [PrimaryKey(nameof(IdEmployee), nameof(IdStudentApplication))]
 public class SupervisorReview
 {
-    public Guid IdEmployee { get; set; }  // Руководитель
+    public EmployeeId IdEmployee { get; set; }  // Руководитель
     
-    public Guid IdStudentApplication { get; set; }  // Заявка студента
+    public StudentApplicationId IdStudentApplication { get; set; }  // Заявка студента
     
     public bool RecommendedForEmployment { get; set; } = false;
     

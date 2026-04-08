@@ -8,7 +8,8 @@ namespace InternshipManager.Api.Models.Shared;
 public class Employee
 {
     [Key]
-    public Guid IdEmployee { get; set; } = Guid.NewGuid();
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public EmployeeId IdEmployee { get; set; }
     
     [Required]
     [MaxLength(255)]
@@ -27,7 +28,7 @@ public class Employee
     [MaxLength(255)]
     public string Position { get; set; } = string.Empty;
     
-    public int? IdDepartment { get; set; }
+    public DepartmentId IdDepartment { get; set; }
     
     public EmployeeRole Role { get; set; } = EmployeeRole.Supervisor;
     

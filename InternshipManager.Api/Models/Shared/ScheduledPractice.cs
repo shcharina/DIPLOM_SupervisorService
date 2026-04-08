@@ -6,11 +6,12 @@ namespace InternshipManager.Api.Models.Shared;
 public class ScheduledPractice
 {
     [Key]
-    public int IdScheduledPractice { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public ScheduledPracticeId IdScheduledPractice { get; set; }
     
-    public int IdSpecialization { get; set; }
+    public SpecializationId IdSpecialization { get; set; }
     
-    public int IdPracticeType { get; set; }
+    public PracticeTypeId IdPracticeType { get; set; }
     
     public DateTime StartDate { get; set; }
     

@@ -8,16 +8,17 @@ namespace InternshipManager.Api.Models.Supervisor;
 public class InterviewSlot
 {
     [Key]
-    public int IdInterviewSlot { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public InterviewSlotId IdInterviewSlot { get; set; }
     
     [Required]
-    public Guid IdEmployee { get; set; }  // Кто будет проводить собеседование
+    public EmployeeId IdEmployee { get; set; }  // Кто будет проводить собеседование
     
-    public Guid? IdCreator { get; set; }  // Кто создал этот слот (null = сам руководитель)
+    public EmployeeId? IdCreator { get; set; }  // Кто создал этот слот (null = сам руководитель)
     
-    public int IdInterval { get; set; }  // FK на TimeInterval
+    public IntervalId IdInterval { get; set; }  // FK на TimeInterval
 
-    public Guid? IdSupervisorApplication { get; set; }
+    public SupervisorApplicationId? IdSupervisorApplication { get; set; }
     
     [Required]
     public DateTime StartTime { get; set; }

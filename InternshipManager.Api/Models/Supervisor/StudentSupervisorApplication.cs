@@ -9,9 +9,9 @@ namespace InternshipManager.Api.Models.Supervisor;
 [PrimaryKey(nameof(IdSupervisorApplication), nameof(IdStudentApplication))]
 public class StudentSupervisorApplication
 {
-    public Guid IdSupervisorApplication { get; set; }
+    public SupervisorApplicationId IdSupervisorApplication { get; set; }
     
-    public Guid IdStudentApplication { get; set; }  // ID заявки студента (из другой системы)
+    public StudentApplicationId IdStudentApplication { get; set; }  // ID заявки студента (из другой системы)
     
     public StudentSupervisorApplicationStatus Status { get; set; } = StudentSupervisorApplicationStatus.НаРассмотренииРуководителем;
     
