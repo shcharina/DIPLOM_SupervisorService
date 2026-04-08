@@ -13,10 +13,10 @@ namespace InternshipManager.Api.Controllers;
 [Asp.Versioning.ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 
-public class SupervisorReviewControllerController : ControllerBase
+public class SupervisorReviewController : ControllerBase
 {
     private readonly AppDbContext _context;
-    public SupervisorReviewControllerController(AppDbContext context)
+    public SupervisorReviewController(AppDbContext context)
     {
         _context = context;
     }

@@ -111,7 +111,7 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
         {
             var completedStudents = await context.StudentSupervisorApplications
                 .Where(s =>
-                    s.IdStudentApplication == application.IdSupervisorApplication &&
+                    s.IdSupervisorApplication == application.IdSupervisorApplication &&
                     s.Status == StudentSupervisorApplicationStatus.Принят)
                 .ToArrayAsync();
             
