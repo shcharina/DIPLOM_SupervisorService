@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using InternshipManager.Api.Data;
-using InternshipManager.Api.DTOs.Interview;
 using InternshipManager.Api.Enums;
+using InternshipManager.Api.DTOs.Interview;
 using InternshipManager.Api.Services;
 
 namespace InternshipManager.Api.Controllers;
@@ -164,4 +164,3 @@ public class InterviewController : ControllerBase
     }
 
 }
-

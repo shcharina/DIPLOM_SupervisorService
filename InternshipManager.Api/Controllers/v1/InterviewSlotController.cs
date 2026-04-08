@@ -193,7 +193,7 @@ public class InterviewSlotController : ControllerBase
             // Сервис практиканта читает этот список и показывает слот этим студентам
             studentsToNotify = eligibleStudents,
             studentsCount = eligibleStudents.Count,
-            message = "Слот опубликован для {eligibleStudents.Count} студентов {scope}"
+            message = $"Слот опубликован для {eligibleStudents.Count} студентов {scope}"
         });
 
     }
