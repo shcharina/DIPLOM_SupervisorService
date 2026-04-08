@@ -30,19 +30,19 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
 
             // Ждём до следующей проверки
             await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
-
         }
 
     }
 
     private async Task CheckExpiredApplications()
     {
-        _logger.LogInformation("Проверка просроченных заявок: {time}", DateTime.UtcNow);
         using var scope = _scopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        
+        _logger.LogInformation("Проверка заявок, у которых наступила дата начала практики: {time}", DateTime.UtcNow);
 
         // Находим все отправленные заявки у которых дата начала уже наступила
-        var expiredApplications = await context.SupervisorApplications
+        var startedApplications = await context.SupervisorApplications
             .Where(a =>
                 a.Status == SupervisorApplicationStatus.Отправлена &&
                 a.StartDate != null &&
@@ -50,9 +50,9 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
             .ToListAsync();
 
         _logger.LogInformation(
-            "Найдено просроченных заявок: {count}", expiredApplications.Count);
+            "Найдено заявок, у которых наступила дата начала практики: {count}", startedApplications.Count);
 
-        foreach (var application in expiredApplications)
+        foreach (var application in startedApplications)
         {
             // Считаем принятых студентов
             var acceptedCount = await context.StudentSupervisorApplications
@@ -89,6 +89,52 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
         }
 
         await context.SaveChangesAsync();
+
+        // Проверка на окончание практики - необходимость отзыва
+        await CheckPendingReviews(context);
+    }
+
+    private async Task CheckPendingReviews(AppDbContext context)
+    {
+        _logger.LogInformation(
+            "Проверка необходимости отзывов: {time}",
+            DateTime.UtcNow);
+        
+        var completedApplications = await context.SupervisorApplications
+            .Where(a =>
+            a.EndDate != null &&
+            a.EndDate <= DateTime.UtcNow &&
+            a.Status == SupervisorApplicationStatus.Удовлетворена)
+            .ToListAsync();
+
+        foreach (var application in completedApplications)
+        {
+            var completedStudents = await context.StudentSupervisorApplications
+                .Where(s =>
+                    s.IdSupervisorApplication == application.IdSupervisorApplication &&
+                    s.Status == StudentSupervisorApplicationStatus.Принят)
+                .ToArrayAsync();
+            
+            foreach (var student in completedStudents)
+            {
+                var reviewExists = await context.SupervisorReviews
+                    .AnyAsync(r =>
+                    r.IdEmployee == application.IdEmployee &&
+                    r.IdStudentApplication == student.IdStudentApplication);
+                
+                if (!reviewExists)
+                {
+                    _logger.LogInformation(
+                        "Руководитель {supervisor} должен оставить отзыв о студенте {student}",
+                        application.IdEmployee,
+                        student.IdStudentApplication);
+
+                    // тут потом добавить какую-нибудь функцию типа уведомление руководителю    
+                }
+
+            }
+
+        }
 
     }
 
