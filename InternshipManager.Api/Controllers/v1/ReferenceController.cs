@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 using InternshipManager.Api.Services;
 
+namespace InternshipManager.Api.Controllers;
+
 public class ReferenceController : ControllerBase
 {
     private readonly ManagerApiClient _managerApi;
