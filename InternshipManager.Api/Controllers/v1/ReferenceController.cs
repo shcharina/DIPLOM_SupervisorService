@@ -20,28 +20,6 @@ public class ReferenceController : ControllerBase
         _context = context;
     }
 
-    // GET api/v1/Reference/supervisors
-
-    // Список руководителей (для выбора кто подаёт заявку)
-
-    [HttpGet("supervisors")]
-
-    public async Task<IActionResult> GetSupervisors()
-    {
-        var supervisors = await _context.Employees
-            .Where(e => e.Role == EmployeeRole.Supervisor)
-            .Select(e => new
-            {
-                id = e.IdEmployee,
-                fullName = e.LastName + " " + e.FirstName + 
-                           (e.Patronymic != null ? " " + e.Patronymic : ""),
-                position = e.Position
-            })
-            .ToListAsync();
-
-        return Ok(supervisors);
-    }
-
     // GET api/v1/Reference/specializations
 
     [HttpGet("specializations")]
