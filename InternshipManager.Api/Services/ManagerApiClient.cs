@@ -68,7 +68,7 @@ public class ManagerApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync("/api/v1/specializations");
+            var response = await _httpClient.GetAsync("/api/v1/Specialization");
             response.EnsureSuccessStatusCode();
 
             return await response.Content
@@ -87,7 +87,7 @@ public class ManagerApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync("/api/v1/departments");
+            var response = await _httpClient.GetAsync("/api/v1/Department");
             response.EnsureSuccessStatusCode();
 
             return await response.Content
