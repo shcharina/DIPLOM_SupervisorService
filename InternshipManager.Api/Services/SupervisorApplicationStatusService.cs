@@ -14,7 +14,7 @@ public class SupervisorApplicationStatusService
     }
 
     // Вызывается каждый раз когда меняется статус студента
-    public async Task CheckAndUpdateApplicationStatus(Guid supervisorApplicationId)
+    public async Task CheckAndUpdateApplicationStatus(SupervisorApplicationId supervisorApplicationId)
     {
         var application = await _context.SupervisorApplications
             .FirstOrDefaultAsync(a => 
@@ -40,7 +40,7 @@ public class SupervisorApplicationStatusService
             application.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
-        else if(application.Status == SupervisorApplicationStatus.Удовлетворена)
+        else if (application.Status == SupervisorApplicationStatus.Удовлетворена)
         {
             // Студент отозвал заявку и количество стало меньше нужного
             // То ставим обратно статус Отправлена

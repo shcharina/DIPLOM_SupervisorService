@@ -25,9 +25,9 @@ public class SupervisorReviewController : ControllerBase
     
     // Руководитель видит список студентов которым нужен отзыв
     
-    [HttpGet("pending/{supervisorId:guid}")]
+    [HttpGet("pending/{supervisorId:int}")] // :guid
 
-    public async Task<IActionResult> GetPendingReviews(Guid supervisorId)
+    public async Task<IActionResult> GetPendingReviews(EmployeeId supervisorId)
     {
         // Все заявки этого руководителя где практика закончилась
         var completedApplicationIds = await _context.SupervisorApplications

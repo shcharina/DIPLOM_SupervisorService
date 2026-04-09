@@ -29,11 +29,12 @@ public class StudentSupervisorApplicationController : ControllerBase
 
     // Руководитель смотрит всех студентов по своей заявке
 
-    [HttpGet("{supervisorApplicationId:guid}")]
+    [HttpGet("{supervisorApplicationId:int}")] //:guid
 
     public async Task<IActionResult> GetStudents(
-        Guid supervisorApplicationId,
-        [FromQuery] StudentSupervisorApplicationStatus? status = null        )
+        SupervisorApplicationId supervisorApplicationId,
+        [FromQuery] StudentSupervisorApplicationStatus? status = null
+        )
     {
         var query = _context.StudentSupervisorApplications
             .Where(s => s.IdSupervisorApplication == supervisorApplicationId);
@@ -59,11 +60,11 @@ public class StudentSupervisorApplicationController : ControllerBase
 
     // Руководитель берёт студента сразу на практику без собеседования
 
-    [HttpPut("{supervisorApplicationId:guid}/{studentApplicationId:guid}/accept")]
+    [HttpPut("{supervisorApplicationId:int}/{studentApplicationId:int}/accept")] // :guid
 
     public async Task<IActionResult> AcceptWithoutInterview(
-        Guid supervisorApplicationId,
-        Guid studentApplicationId)
+        SupervisorApplicationId supervisorApplicationId,
+        StudentApplicationId studentApplicationId)
     {
         var link = await _context.StudentSupervisorApplications
             .FirstOrDefaultAsync(s =>
@@ -129,11 +130,11 @@ public class StudentSupervisorApplicationController : ControllerBase
 
     // Руководитель приглашает студента на собеседование
 
-    [HttpPut("{supervisorApplicationId:guid}/{studentApplicationId:guid}/invite")]
+    [HttpPut("{supervisorApplicationId:int}/{studentApplicationId:int}/invite")] //:guid
 
     public async Task<IActionResult> InviteToInterview(
-        Guid supervisorApplicationId,
-        Guid studentApplicationId)
+        SupervisorApplicationId supervisorApplicationId,
+        StudentApplicationId studentApplicationId)
     {
         var link = await _context.StudentSupervisorApplications
             .FirstOrDefaultAsync(s =>
@@ -148,7 +149,7 @@ public class StudentSupervisorApplicationController : ControllerBase
         if (link.Status == StudentSupervisorApplicationStatus.Отказано)
             return BadRequest(new
             {
-                type = "bisuness_error",
+                type = "business_error",
                 detail = "Студент отозвал заявку, дальнейшая работа с ним невозможна"
             });
 
@@ -178,11 +179,11 @@ public class StudentSupervisorApplicationController : ControllerBase
 
     // Руководитель отказывает студенту
 
-    [HttpPut("{supervisorApplicationId:guid}/{studentApplicationId:guid}/reject")]
+    [HttpPut("{supervisorApplicationId:int}/{studentApplicationId:int}/reject")] //:guid
 
     public async Task<IActionResult> Reject(
-        Guid supervisorApplicationId,
-        Guid studentApplicationId)
+        SupervisorApplicationId supervisorApplicationId,
+        StudentApplicationId studentApplicationId)
     {
         var link = await _context.StudentSupervisorApplications
             .FirstOrDefaultAsync(s =>

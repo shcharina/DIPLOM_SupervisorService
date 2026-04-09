@@ -25,7 +25,7 @@ public class SupervisorApplicationController : ControllerBase
 
     // GET api/v1/SupervisorApplication/supervisor/{supervisorId}
 
-    [HttpGet("supervisor/{supervisorId}")]  // здесь убран Guid !!!! :guid
+    [HttpGet("supervisor/{supervisorId:int}")]  // здесь убран Guid !!!! :guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 
@@ -71,7 +71,7 @@ public class SupervisorApplicationController : ControllerBase
 
     // GET api/v1/SupervisorApplication/{id}
 
-    [HttpGet("{id}")] // убран :guid
+    [HttpGet("{id:int}")] // убран :guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 
@@ -130,140 +130,140 @@ public class SupervisorApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
 
-public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDto dto)
-{
-    var supervisor = await _context.Employees
-        .FirstOrDefaultAsync(e =>
-            e.IdEmployee == dto.SupervisorId &&
-            e.Role == EmployeeRole.Supervisor);
-
-    if (supervisor == null)
-        return NotFound(new
-        {
-            type = "not_found",
-            detail = "Руководитель с таким ID не найден"
-        }
-        );
-    
-    SpecializationId idSpecialization;
-    DateTime? startDate;
-    DateTime? endDate;
-
-    if (dto.IdScheduledPractice.HasValue)
-        {
-            //Берем из БД данные об практиках из расписания
-            var scheduledPractice = await _context.ScheduledPractices
-                .FirstOrDefaultAsync( sp => sp.IdScheduledPractice == dto.IdScheduledPractice.Value);
-            if (scheduledPractice == null)
-                return NotFound(new
-                {
-                    type = "not_found",
-                    detail = "Практика из расписания не найдена"
-                });
-
-            // Берём данные из расписания
-            idSpecialization = scheduledPractice.IdSpecialization;
-            startDate = scheduledPractice.StartDate;
-            endDate = scheduledPractice.EndDate;   
-        
-        }
-    else
-        {
-            // Ручное заполнение - все поля обязательны
-            if (dto.IdSpecialization == null || dto.StartDate == null || dto.EndDate == null)
-                    return BadRequest(new
-                    {
-                        type = "validation_error",
-                        detail = "Если не указана практика из расписания, нужно указать специализацию, дату начала и дату конца"
-                    });
-
-                // Дата окончания должна быть позже даты начала
-
-                if (dto.StartDate >= dto.EndDate)
-                    return BadRequest(new
-                    {
-                        type = "validation_error",
-                        detail = "Дата окончания должна быть позже даты начала"
-                    });
-
-                idSpecialization = dto.IdSpecialization.Value;
-                startDate = dto.StartDate;
-                endDate = dto.EndDate;
-        }
-
-    // Создаём модель из DTO
-
-    var application = new Models.Supervisor.SupervisorApplication
+    public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDto dto)
     {
-        // IdSupervisorApplication = Guid.NewGuid(), -- раскомментировать после возврата Guid
-        IdEmployee = dto.SupervisorId,
-        IdSpecialization = idSpecialization,
-        IdDepartment = dto.IdDepartment,
-        IdAddress = dto.IdAddress,
-        IdScheduledPractice = dto.IdScheduledPractice,
-        StartDate = startDate,
-        EndDate = endDate,
-        RequestedStudentsCount = dto.RequestedStudentsCount,
-        PracticeFormat = dto.PracticeFormat,
-        IsPaid = dto.IsPaid,
-        Status = SupervisorApplicationStatus.Шаблон,
-        CreatedAt = DateTime.UtcNow
-    };
+        var supervisor = await _context.Employees
+            .FirstOrDefaultAsync(e =>
+                e.IdEmployee == dto.SupervisorId &&
+                e.Role == EmployeeRole.Supervisor);
 
-    _context.SupervisorApplications.Add(application);
-    await _context.SaveChangesAsync();
+        if (supervisor == null)
+            return NotFound(new
+            {
+                type = "not_found",
+                detail = "Руководитель с таким ID не найден"
+            }
+            );
 
-    // Возвращаем DTO, а не модель
+        SpecializationId idSpecialization;
+        DateTime? startDate;
+        DateTime? endDate;
 
-    return CreatedAtAction(nameof(GetById),
-        new { id = application.IdSupervisorApplication, version = "1" },
-        ToResponseDto(application));
+        if (dto.IdScheduledPractice.HasValue)
+            {
+                //Берем из БД данные об практиках из расписания
+                var scheduledPractice = await _context.ScheduledPractices
+                    .FirstOrDefaultAsync( sp => sp.IdScheduledPractice == dto.IdScheduledPractice.Value);
+                if (scheduledPractice == null)
+                    return NotFound(new
+                    {
+                        type = "not_found",
+                        detail = "Практика из расписания не найдена"
+                    });
 
-}
+                // Берём данные из расписания
+                idSpecialization = scheduledPractice.IdSpecialization;
+                startDate = scheduledPractice.StartDate;
+                endDate = scheduledPractice.EndDate;   
+
+            }
+        else
+            {
+                // Ручное заполнение - все поля обязательны
+                if (dto.IdSpecialization == null || dto.StartDate == null || dto.EndDate == null)
+                        return BadRequest(new
+                        {
+                            type = "validation_error",
+                            detail = "Если не указана практика из расписания, нужно указать специализацию, дату начала и дату конца"
+                        });
+
+                    // Дата окончания должна быть позже даты начала
+
+                    if (dto.StartDate >= dto.EndDate)
+                        return BadRequest(new
+                        {
+                            type = "validation_error",
+                            detail = "Дата окончания должна быть позже даты начала"
+                        });
+
+                    idSpecialization = dto.IdSpecialization.Value;
+                    startDate = dto.StartDate;
+                    endDate = dto.EndDate;
+            }
+
+        // Создаём модель из DTO
+
+        var application = new Models.Supervisor.SupervisorApplication
+        {
+            // IdSupervisorApplication = Guid.NewGuid(), -- раскомментировать после возврата Guid
+            IdEmployee = dto.SupervisorId,
+            IdSpecialization = idSpecialization,
+            IdDepartment = dto.IdDepartment,
+            IdAddress = dto.IdAddress,
+            IdScheduledPractice = dto.IdScheduledPractice,
+            StartDate = startDate,
+            EndDate = endDate,
+            RequestedStudentsCount = dto.RequestedStudentsCount,
+            PracticeFormat = dto.PracticeFormat,
+            IsPaid = dto.IsPaid,
+            Status = SupervisorApplicationStatus.Шаблон,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.SupervisorApplications.Add(application);
+        await _context.SaveChangesAsync();
+
+        // Возвращаем DTO, а не модель
+
+        return CreatedAtAction(nameof(GetById),
+            new { id = application.IdSupervisorApplication, version = "1" },
+            ToResponseDto(application));
+
+    }
 
 
     // PUT api/v1/SupervisorApplication/{id}
 
-[HttpPut("{id}")] //:guid после возврата Guid
-[ProducesResponseType(StatusCodes.Status200OK)]
-[ProducesResponseType(StatusCodes.Status400BadRequest)]
-[ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpPut("{id:int}")] //:guid после возврата
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-public async Task<IActionResult> Update(SupervisorApplicationId id, [FromBody] UpdateSupervisorApplicationDto dto)
-{
-    var application = await _context.SupervisorApplications.FindAsync(id);
+    public async Task<IActionResult> Update(SupervisorApplicationId id, [FromBody] UpdateSupervisorApplicationDto dto)
+    {
+        var application = await _context.SupervisorApplications.FindAsync(id);
 
-    if (application == null)
-        return NotFound(new { detail = "Заявка не найдена" });
+        if (application == null)
+            return NotFound(new { detail = "Заявка не найдена" });
 
-    if (application.Status != SupervisorApplicationStatus.Шаблон)
-        return BadRequest(new
-        {
-            type = "business_error",
-            detail = $"Нельзя редактировать заявку в статусе {application.Status}"
-        });
+        if (application.Status != SupervisorApplicationStatus.Шаблон)
+            return BadRequest(new
+            {
+                type = "business_error",
+                detail = $"Нельзя редактировать заявку в статусе {application.Status}"
+            });
 
-    // Обновляем только те поля, которые пришли
+        // Обновляем только те поля, которые пришли
 
-    if (dto.IdSpecialization.HasValue) application.IdSpecialization = dto.IdSpecialization.Value;
-    if (dto.IdDepartment.HasValue) application.IdDepartment = dto.IdDepartment.Value;
-    if (dto.IdAddress.HasValue) application.IdAddress = dto.IdAddress.Value;
-    if (dto.IdScheduledPractice.HasValue) application.IdScheduledPractice = dto.IdScheduledPractice;
-    if (dto.RequestedStudentsCount.HasValue) application.RequestedStudentsCount = dto.RequestedStudentsCount.Value;
-    if (dto.PracticeFormat.HasValue) application.PracticeFormat = dto.PracticeFormat.Value;
-    if (dto.IsPaid.HasValue) application.IsPaid = dto.IsPaid.Value;
-    if (dto.StartDate.HasValue) application.StartDate = dto.StartDate;
-    if (dto.EndDate.HasValue) application.EndDate = dto.EndDate;
+        if (dto.IdSpecialization.HasValue) application.IdSpecialization = dto.IdSpecialization.Value;
+        if (dto.IdDepartment.HasValue) application.IdDepartment = dto.IdDepartment.Value;
+        if (dto.IdAddress.HasValue) application.IdAddress = dto.IdAddress.Value;
+        if (dto.IdScheduledPractice.HasValue) application.IdScheduledPractice = dto.IdScheduledPractice;
+        if (dto.RequestedStudentsCount.HasValue) application.RequestedStudentsCount = dto.RequestedStudentsCount.Value;
+        if (dto.PracticeFormat.HasValue) application.PracticeFormat = dto.PracticeFormat.Value;
+        if (dto.IsPaid.HasValue) application.IsPaid = dto.IsPaid.Value;
+        if (dto.StartDate.HasValue) application.StartDate = dto.StartDate;
+        if (dto.EndDate.HasValue) application.EndDate = dto.EndDate;
 
-    application.UpdatedAt = DateTime.UtcNow;
-    await _context.SaveChangesAsync();
+        application.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
 
-    return Ok(ToResponseDto(application));
-}
+        return Ok(ToResponseDto(application));
+    }
 
     // DELETE api/v1/SupervisorApplication/{id}
 
-    [HttpDelete("{id}")] //:guid
+    [HttpDelete("{id:int}")] //:guid
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -289,7 +289,7 @@ public async Task<IActionResult> Update(SupervisorApplicationId id, [FromBody] U
 
     // PUT api/v1/SupervisorApplication/{id}/send
 
-    [HttpPut("{id}/send")] //:guid
+    [HttpPut("{id:int}/send")] //:guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -324,7 +324,7 @@ public async Task<IActionResult> Update(SupervisorApplicationId id, [FromBody] U
 
     // PUT api/v1/SupervisorApplication/{id}/cancel
 
-    [HttpPut("{id}/cancel")] //:guid
+    [HttpPut("{id:int}/cancel")] //:guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -415,7 +415,7 @@ public async Task<IActionResult> Update(SupervisorApplicationId id, [FromBody] U
 
     // PUT api/v1/SupervisorApplication/{id}/close
 
-    [HttpPut("{id}/close")] //:guid
+    [HttpPut("{id:int}/close")] //:guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

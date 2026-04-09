@@ -24,9 +24,9 @@ public class InterviewSlotController : ControllerBase
 
     // Руководитель видит слоты на согласование (предложенные менеджером)
 
-    [HttpGet("pending/{supervisorId:guid}")]
+    [HttpGet("pending/{supervisorId:int}")] //:guid
 
-    public async Task<IActionResult> GetPending(Guid supervisorId)
+    public async Task<IActionResult> GetPending(EmployeeId supervisorId)
     {
         var slots = await _context.InterviewSlots
             .Where(s => s.IdEmployee == supervisorId
@@ -42,7 +42,7 @@ public class InterviewSlotController : ControllerBase
 
     [HttpPut("{id}/confirm")]
 
-    public async Task<IActionResult> Confirm(int id)
+    public async Task<IActionResult> Confirm(InterviewSlotId id)
     {
         var slot = await _context.InterviewSlots.FindAsync(id);
         if (slot == null)
@@ -77,7 +77,7 @@ public class InterviewSlotController : ControllerBase
 
     [HttpPut("{id}/reject")]
 
-    public async Task<IActionResult> Reject(int id, [FromBody] RejectSlotDto dto)
+    public async Task<IActionResult> Reject(InterviewSlotId id, [FromBody] RejectSlotDto dto)
     {
         var slot = await _context.InterviewSlots.FindAsync(id);
         if (slot == null)
@@ -114,8 +114,8 @@ public class InterviewSlotController : ControllerBase
     [HttpPut("{id}/publish")]
 
     public async Task<IActionResult> Publish(
-        int id,
-        [FromQuery] Guid? supervisorApplicationId = null)
+        InterviewSlotId id,
+        [FromQuery] SupervisorApplicationId? supervisorApplicationId = null)
     {
         var slot = await _context.InterviewSlots.FindAsync(id);
 
