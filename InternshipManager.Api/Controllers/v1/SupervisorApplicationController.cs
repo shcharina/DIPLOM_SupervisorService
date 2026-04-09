@@ -6,7 +6,6 @@ using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
 using InternshipManager.Api.Models.Supervisor;
 using InternshipManager.Api.DTOs.SupervisorApplication;
-using InternshipManager.Api.Models.Shared;
 using InternshipManager.Api.Services;
 
 namespace InternshipManager.Api.Controllers;
