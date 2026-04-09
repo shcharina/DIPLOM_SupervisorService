@@ -129,7 +129,7 @@ public class InterviewSlotController : ControllerBase
                 detail = "Публиковать можно только подтверждённые слоты"
             });
 
-        List<Guid> eligibleStudents;
+        List<StudentApplicationId> eligibleStudents;
         string scope;
 
         if (supervisorApplicationId.HasValue)
