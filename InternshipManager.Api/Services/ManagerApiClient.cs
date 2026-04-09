@@ -15,7 +15,7 @@ public class ManagerApiClient
         _logger = logger;
     }
 
-    public async Task<EmployeeExternalDto?> GetSupervisorByIdAsync(Guid id)
+    public async Task<EmployeeExternalDto?> GetSupervisorByIdAsync(EmployeeId id)
     {
         try
         {
@@ -42,7 +42,7 @@ public class ManagerApiClient
         }
     }
 
-    public async Task<ScheduledPracticeExternalDto?> GetScheduledPracticeAsync(int id)
+    public async Task<ScheduledPracticeExternalDto?> GetScheduledPracticeAsync(ScheduledPracticeId id)
     {
         try
         {
@@ -105,7 +105,7 @@ public class ManagerApiClient
     }
 
     public async Task<List<AddressExternalDto>> GetAddressesAsync(
-        int? departmentId = null)
+        DepartmentId? departmentId = null)
     {
         try
         {

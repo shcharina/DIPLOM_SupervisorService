@@ -7,6 +7,7 @@ using InternshipManager.Api.Enums;
 using InternshipManager.Api.Models.Supervisor;
 using InternshipManager.Api.DTOs.SupervisorApplication;
 using InternshipManager.Api.Models.Shared;
+using InternshipManager.Api.Services;
 
 namespace InternshipManager.Api.Controllers;
 
@@ -18,9 +19,17 @@ public class SupervisorApplicationController : ControllerBase
 {
 
     private readonly AppDbContext _context;
-    public SupervisorApplicationController(AppDbContext context)
+    private readonly SupervisorApplicationStatusService _statusService;
+    private readonly ManagerApiClient _managerApi;
+
+    public SupervisorApplicationController(
+        AppDbContext context,
+        SupervisorApplicationStatusService statusService,
+        ManagerApiClient managerApi)
     {
         _context = context;
+        _statusService = statusService;
+        _managerApi = managerApi;
     }
 
     // GET api/v1/SupervisorApplication/supervisor/{supervisorId}
@@ -132,12 +141,9 @@ public class SupervisorApplicationController : ControllerBase
 
     public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDto dto)
     {
-        var supervisor = await _context.Employees
-            .FirstOrDefaultAsync(e =>
-                e.IdEmployee == dto.SupervisorId &&
-                e.Role == EmployeeRole.Supervisor);
+        var supervisor = await _managerApi.GetSupervisorByIdAsync(dto.SupervisorId);
 
-        if (supervisor == null)
+        if (supervisor == null || supervisor.Role != 1)
             return NotFound(new
             {
                 type = "not_found",
@@ -152,8 +158,9 @@ public class SupervisorApplicationController : ControllerBase
         if (dto.IdScheduledPractice.HasValue)
             {
                 //Берем из БД данные об практиках из расписания
-                var scheduledPractice = await _context.ScheduledPractices
-                    .FirstOrDefaultAsync( sp => sp.IdScheduledPractice == dto.IdScheduledPractice.Value);
+                var scheduledPractice = await _managerApi
+                    .GetScheduledPracticeAsync(dto.IdScheduledPractice.Value);
+                    
                 if (scheduledPractice == null)
                     return NotFound(new
                     {
