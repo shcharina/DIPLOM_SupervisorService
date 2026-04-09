@@ -6,22 +6,20 @@ namespace InternshipManager.Api.DTOs.SupervisorApplication;
 //Что уходит клиенту в ответе
 
 public class SupervisorApplicationResponseDto
-
 {
+    public SupervisorApplicationId IdSupervisorApplication { get; set; }
 
-    public Guid IdSupervisorApplication { get; set; }
+    public EmployeeId IdEmployee { get; set; }
 
-    public Guid IdEmployee { get; set; }
+    public EmployeeId? IdCreatedBy { get; set; }
 
-    public Guid? IdCreatedBy { get; set; }
+    public SpecializationId IdSpecialization { get; set; }
 
-    public int IdSpecialization { get; set; }
+    public DepartmentId IdDepartment { get; set; }
 
-    public int IdDepartment { get; set; }
+    public AddressId IdAddress { get; set; }
 
-    public int IdAddress { get; set; }
-
-    public int? IdScheduledPractice { get; set; }
+    public ScheduledPracticeId? IdScheduledPractice { get; set; }
 
     public DateTime? StartDate { get; set; }
 
@@ -46,5 +44,3 @@ public class SupervisorApplicationResponseDto
     public bool IsFromSchedule { get; set; }
 
 }
-
-

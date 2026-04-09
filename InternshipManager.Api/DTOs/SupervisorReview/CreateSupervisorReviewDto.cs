@@ -5,10 +5,10 @@ namespace InternshipManager.Api.DTOs.SupervisorReview;
 public class CreateSupervisorReviewDto
 {
     [Required]
-    public Guid IdEmployee { get; set; }
+    public EmployeeId IdEmployee { get; set; }
 
     [Required]
-    public Guid IdStudentApplication { get; set; }
+    public StudentApplicationId IdStudentApplication { get; set; }
 
     public bool RecommendedForEmployment { get; set; } = false;
 

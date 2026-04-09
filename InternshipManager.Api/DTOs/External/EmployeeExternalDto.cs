@@ -2,7 +2,7 @@ namespace InternshipManager.Api.DTOs.External;
 
 public class EmployeeExternalDto
 {
-    public Guid IdEmployee { get; set; }
+    public EmployeeId IdEmployee { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? Patronymic { get; set; }
