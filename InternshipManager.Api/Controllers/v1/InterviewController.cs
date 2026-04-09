@@ -29,7 +29,7 @@ public class InterviewController : ControllerBase
 
     // Руководитель видит все свои назначенные собеседования
 
-    [HttpGet("supervisor/{supervisorId:guid}")]
+    [HttpGet("supervisor/{supervisorId}")] // здесь убран Guid !!!! :guid
 
     public async Task<IActionResult> GetBySupervisor(Guid supervisorId)
     {

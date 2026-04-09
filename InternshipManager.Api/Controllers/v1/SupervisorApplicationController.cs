@@ -25,32 +25,23 @@ public class SupervisorApplicationController : ControllerBase
 
     // GET api/v1/SupervisorApplication/supervisor/{supervisorId}
 
-    [HttpGet("supervisor/{supervisorId:guid}")]
+    [HttpGet("supervisor/{supervisorId}")]  // здесь убран Guid !!!! :guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 
     public async Task<IActionResult> GetBySupervisor(
-
-        Guid supervisorId,
-
+        EmployeeId supervisorId,
         [FromQuery] int page = 1,
-
         [FromQuery] int pageSize = 20,
-
         [FromQuery] SupervisorApplicationStatus? status = null)
-
     {
-
         if (page < 1 || pageSize < 1 || pageSize > 100)
-
             return BadRequest(new { detail = "Некорректные параметры пагинации" });
 
         var query = _context.SupervisorApplications
-
             .Where(a => a.IdEmployee == supervisorId);
 
         if (status.HasValue)
-
             query = query.Where(a => a.Status == status.Value);
 
         var totalItems = await query.CountAsync();
@@ -58,50 +49,33 @@ public class SupervisorApplicationController : ControllerBase
         var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
         var data = await query
-
             .OrderByDescending(a => a.CreatedAt)
-
             .Skip((page - 1) * pageSize)
-
             .Take(pageSize)
-
             .ToListAsync();
 
         return Ok(new
-
         {
-
             data,
-
             pagination = new
-
             {
-
                 currentPage = page,
-
                 pageSize,
-
                 totalPages,
-
                 totalItems,
-
                 hasNextPage = page < totalPages,
-
                 hasPreviousPage = page > 1
-
             }
-
         });
-
     }
 
     // GET api/v1/SupervisorApplication/{id}
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id}")] // убран :guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(SupervisorApplicationId id)
     {
         var application = await _context.SupervisorApplications
             .FirstOrDefaultAsync(a => a.IdSupervisorApplication == id);
@@ -171,7 +145,7 @@ public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDt
         }
         );
     
-    int idSpecialization;
+    SpecializationId idSpecialization;
     DateTime? startDate;
     DateTime? endDate;
 
@@ -195,7 +169,7 @@ public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDt
         }
     else
         {
-            // Ручное заполнение — все поля обязательны
+            // Ручное заполнение - все поля обязательны
             if (dto.IdSpecialization == null || dto.StartDate == null || dto.EndDate == null)
                     return BadRequest(new
                     {
@@ -221,7 +195,7 @@ public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDt
 
     var application = new Models.Supervisor.SupervisorApplication
     {
-        IdSupervisorApplication = Guid.NewGuid(),
+        // IdSupervisorApplication = Guid.NewGuid(), -- раскомментировать после возврата Guid
         IdEmployee = dto.SupervisorId,
         IdSpecialization = idSpecialization,
         IdDepartment = dto.IdDepartment,
@@ -250,12 +224,12 @@ public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDt
 
     // PUT api/v1/SupervisorApplication/{id}
 
-[HttpPut("{id:guid}")]
+[HttpPut("{id}")] //:guid после возврата Guid
 [ProducesResponseType(StatusCodes.Status200OK)]
 [ProducesResponseType(StatusCodes.Status400BadRequest)]
 [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorApplicationDto dto)
+public async Task<IActionResult> Update(SupervisorApplicationId id, [FromBody] UpdateSupervisorApplicationDto dto)
 {
     var application = await _context.SupervisorApplications.FindAsync(id);
 
@@ -289,12 +263,12 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
 
     // DELETE api/v1/SupervisorApplication/{id}
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id}")] //:guid
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(SupervisorApplicationId id)
     {
         var application = await _context.SupervisorApplications.FindAsync(id);
         if (application == null)
@@ -315,12 +289,12 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
 
     // PUT api/v1/SupervisorApplication/{id}/send
 
-    [HttpPut("{id:guid}/send")]
+    [HttpPut("{id}/send")] //:guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-    public async Task<IActionResult> Send(Guid id)
+    public async Task<IActionResult> Send(SupervisorApplicationId id)
     {
         var application = await _context.SupervisorApplications.FindAsync(id);
 
@@ -350,12 +324,12 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
 
     // PUT api/v1/SupervisorApplication/{id}/cancel
 
-    [HttpPut("{id:guid}/cancel")]
+    [HttpPut("{id}/cancel")] //:guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-    public async Task<IActionResult> Cancel(Guid id)
+    public async Task<IActionResult> Cancel(SupervisorApplicationId id)
     {
         var application = await _context.SupervisorApplications.FindAsync(id);
 
@@ -395,6 +369,7 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
 
         int cancelledSlots = 0;
         int skippedSlots = 0;
+
         foreach (var slot in allSlots)
         {
             if (slot.Status == InterviewSlotStatus.Занят && slot.Interview != null)
@@ -440,12 +415,12 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSupervisorAppl
 
     // PUT api/v1/SupervisorApplication/{id}/close
 
-    [HttpPut("{id:guid}/close")]
+    [HttpPut("{id}/close")] //:guid
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-    public async Task<IActionResult> Close(Guid id)
+    public async Task<IActionResult> Close(SupervisorApplicationId id)
     {
         var application = await _context.SupervisorApplications.FindAsync(id);
         
