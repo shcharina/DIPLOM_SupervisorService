@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Asp.Versioning;
 using Microsoft.EntityFrameworkCore;
 
 using InternshipManager.Api.Data;
@@ -118,7 +117,6 @@ public class SupervisorReviewController : ControllerBase
             TeamworkScore = dto.TeamworkScore,
             OverallScore = dto.OverallScore,
             Comment = dto.Comment,
-            CreatedAt = DateTime.UtcNow
 
         };
 

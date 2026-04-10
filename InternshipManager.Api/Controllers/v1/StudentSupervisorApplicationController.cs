@@ -47,9 +47,7 @@ public class StudentSupervisorApplicationController : ControllerBase
             .Select(s => new
             {
                 idStudentApplication = s.IdStudentApplication,
-                status = s.Status,
-                assignedAt = s.AssignedAt,
-                updatedAt = s.UpdatedAt
+                status = s.Status
             })
             .ToListAsync();
 
@@ -108,7 +106,6 @@ public class StudentSupervisorApplicationController : ControllerBase
             });
 
         link.Status = StudentSupervisorApplicationStatus.ОформлениеДокументов;
-        link.UpdatedAt = DateTime.UtcNow;
         
         await _context.SaveChangesAsync();
 
@@ -161,7 +158,6 @@ public class StudentSupervisorApplicationController : ControllerBase
             });
 
         link.Status = StudentSupervisorApplicationStatus.Собеседование;
-        link.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -194,7 +190,6 @@ public class StudentSupervisorApplicationController : ControllerBase
             return NotFound(new { detail = "Связка студент-заявка не найдена" });
 
         link.Status = StudentSupervisorApplicationStatus.Отказано;
-        link.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 

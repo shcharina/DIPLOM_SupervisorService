@@ -33,10 +33,6 @@ public class SupervisorApplicationResponseDto
 
     public SupervisorApplicationStatus Status { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
-
     // Вычисляемые поля
 
     public bool IsCreatedByManager { get; set; }

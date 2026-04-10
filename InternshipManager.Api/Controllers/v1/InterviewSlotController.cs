@@ -1,10 +1,8 @@
-using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
-using InternshipManager.Api.Models.Supervisor;
 using InternshipManager.Api.DTOs.InterviewSlot;
 
 [ApiController]
@@ -57,7 +55,6 @@ public class InterviewSlotController : ControllerBase
             });
 
         slot.Status = InterviewSlotStatus.Подтвержден;
-        slot.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -92,7 +89,6 @@ public class InterviewSlotController : ControllerBase
 
         slot.Status = InterviewSlotStatus.Отменен;
         slot.RejectionComment = dto.Comment;
-        slot.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -181,7 +177,6 @@ public class InterviewSlotController : ControllerBase
         slot.IdSupervisorApplication = supervisorApplicationId; // null если все заявки
 
         slot.Status = InterviewSlotStatus.Опубликован;
-        slot.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 

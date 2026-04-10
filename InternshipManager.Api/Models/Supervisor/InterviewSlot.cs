@@ -33,10 +33,6 @@ public class InterviewSlot
     
     [MaxLength(500)]
     public string? RejectionComment { get; set; } // В случае отказа руководителем от предложенного слота
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
-    public DateTime? UpdatedAt { get; set; }
     
     // Навигационные свойства
     [ForeignKey(nameof(IdInterval))]

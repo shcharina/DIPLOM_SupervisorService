@@ -14,11 +14,7 @@ public class StudentSupervisorApplication
     public StudentApplicationId IdStudentApplication { get; set; }  // ID заявки студента (из другой системы)
     
     public StudentSupervisorApplicationStatus Status { get; set; } = StudentSupervisorApplicationStatus.НаРассмотренииРуководителем;
-    
-    public DateTime? AssignedAt { get; set; }
-    
-    public DateTime? UpdatedAt { get; set; }
-    
+
     // Навигационные свойства
     [ForeignKey(nameof(IdSupervisorApplication))]
     public SupervisorApplication? SupervisorApplication { get; set; }

@@ -57,7 +57,7 @@ public class SupervisorApplicationController : ControllerBase
         var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
         var data = await query
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.IdSupervisorApplication)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -111,7 +111,7 @@ public class SupervisorApplicationController : ControllerBase
         var totalItems = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
         var data = await query
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.IdSupervisorApplication)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -213,7 +213,6 @@ public class SupervisorApplicationController : ControllerBase
             PracticeFormat = dto.PracticeFormat,
             IsPaid = dto.IsPaid,
             Status = SupervisorApplicationStatus.Шаблон,
-            CreatedAt = DateTime.UtcNow
         };
 
         _context.SupervisorApplications.Add(application);
@@ -261,7 +260,6 @@ public class SupervisorApplicationController : ControllerBase
         if (dto.StartDate.HasValue) application.StartDate = dto.StartDate;
         if (dto.EndDate.HasValue) application.EndDate = dto.EndDate;
 
-        application.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
         return Ok(ToResponseDto(application));
@@ -315,7 +313,6 @@ public class SupervisorApplicationController : ControllerBase
             });
 
         application.Status = SupervisorApplicationStatus.Отправлена;
-        application.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -361,7 +358,6 @@ public class SupervisorApplicationController : ControllerBase
         foreach (var student in studentsToDetach)
         {
             student.Status = StudentSupervisorApplicationStatus.Отказано;
-            student.UpdatedAt = DateTime.UtcNow;
         }
 
         // Отменяем все слоты кроме тех где собеседование уже проведено
@@ -381,7 +377,7 @@ public class SupervisorApplicationController : ControllerBase
             if (slot.Status == InterviewSlotStatus.Занят && slot.Interview != null)
             {
                 // Собеседование уже проведено (есть результат) → оставляем
-                if (slot.Interview.UpdatedAt != null)
+                if (slot.Interview.Status == InterviewStatus.Прошло)
                 {
                     skippedSlots++;
                     continue;
@@ -393,13 +389,11 @@ public class SupervisorApplicationController : ControllerBase
             }
 
             slot.Status = InterviewSlotStatus.Отменен;
-            slot.UpdatedAt = DateTime.UtcNow;
             cancelledSlots++;
         }
 
         var previousStatus = application.Status;
         application.Status = SupervisorApplicationStatus.Отменена;
-        application.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -441,7 +435,6 @@ public class SupervisorApplicationController : ControllerBase
             });
 
         application.Status = SupervisorApplicationStatus.Закрыта;
-        application.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -473,8 +466,6 @@ public class SupervisorApplicationController : ControllerBase
             PracticeFormat = app.PracticeFormat,
             IsPaid = app.IsPaid,
             Status = app.Status,
-            CreatedAt = app.CreatedAt,
-            UpdatedAt = app.UpdatedAt,
             IsCreatedByManager = app.IdCreatedBy != null && app.IdCreatedBy != app.IdEmployee,
             IsFromSchedule = app.IdScheduledPractice != null
         };

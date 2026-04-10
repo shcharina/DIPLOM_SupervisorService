@@ -16,14 +16,12 @@ public class Interview
 
     public InterviewType InterviewType { get; set; } = InterviewType.Руководитель;
     
+    public InterviewStatus Status { get; set; } = InterviewStatus.Назначено;
+    
     [Required]
     public bool Result { get; set; }  // true - принят, false - отклонён
     
     public string? Comment { get; set; }
-    
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
-    public DateTime? UpdatedAt { get; set; }
     
     // Навигационные свойства
     public InterviewSlot? InterviewSlot { get; set; }

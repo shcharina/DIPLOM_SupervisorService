@@ -24,9 +24,7 @@ public class TimeInterval
     public int MaxCount { get; set; }  // Максимум студентов в этот интервал
     
     public TimeSpan? BreakDuration { get; set; }  // Перерыв между слотами
-    
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
+
     // Навигационные свойства
     public ICollection<InterviewSlot> InterviewSlots { get; set; } = new List<InterviewSlot>();
 }

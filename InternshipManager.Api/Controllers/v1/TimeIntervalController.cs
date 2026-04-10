@@ -1,6 +1,4 @@
-using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
@@ -46,7 +44,6 @@ public class TimeIntervalController : ControllerBase
             EndTime = dto.EndTime,
             MaxCount = dto.MaxCount,
             BreakDuration = dto.BreakDuration,
-            CreatedAt = DateTime.UtcNow
         };
 
         _context.TimeIntervals.Add(interval);
@@ -105,7 +102,6 @@ public class TimeIntervalController : ControllerBase
                 StartTime = currentStart,
                 EndTime = slotEnd,
                 Status = status,
-                CreatedAt = DateTime.UtcNow
             });
 
             currentStart = slotEnd + breakTime;

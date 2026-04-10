@@ -49,8 +49,6 @@ public class InterviewController : ControllerBase
                 interviewType = x.Interview.InterviewType,
                 result = x.Interview.Result,
                 comment = x.Interview.Comment,
-                createdAt = x.Interview.CreatedAt,
-                updatedAt = x.Interview.UpdatedAt
             })
             .ToListAsync();
 
@@ -110,7 +108,7 @@ public class InterviewController : ControllerBase
         // Записываем результат
         interview.Result = dto.Result;
         interview.Comment = dto.Comment;
-        interview.UpdatedAt = DateTime.UtcNow;
+        interview.Status = InterviewStatus.Прошло;
 
         // Находим связку студент-заявка
         var slot = await _context.InterviewSlots.FindAsync(id);
@@ -135,7 +133,6 @@ public class InterviewController : ControllerBase
                 link.Status = dto.Result
                     ? StudentSupervisorApplicationStatus.ОформлениеДокументов
                     : StudentSupervisorApplicationStatus.Отказано;
-                link.UpdatedAt = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();

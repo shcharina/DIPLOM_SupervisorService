@@ -31,9 +31,6 @@ namespace InternshipManager.Api.Migrations
                     b.Property<string>("Comment")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("IdStudentApplication")
                         .HasColumnType("integer");
 
@@ -43,8 +40,8 @@ namespace InternshipManager.Api.Migrations
                     b.Property<bool>("Result")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("IdInterviewSlot");
 
@@ -58,9 +55,6 @@ namespace InternshipManager.Api.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdInterviewSlot"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone");
@@ -91,9 +85,6 @@ namespace InternshipManager.Api.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.HasKey("IdInterviewSlot");
 
                     b.HasIndex("IdInterval");
@@ -109,14 +100,8 @@ namespace InternshipManager.Api.Migrations
                     b.Property<int>("IdStudentApplication")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("AssignedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("IdSupervisorApplication", "IdStudentApplication");
 
@@ -130,9 +115,6 @@ namespace InternshipManager.Api.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdSupervisorApplication"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("timestamp with time zone");
@@ -170,9 +152,6 @@ namespace InternshipManager.Api.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.HasKey("IdSupervisorApplication");
 
                     b.ToTable("SupervisorApplications");
@@ -188,9 +167,6 @@ namespace InternshipManager.Api.Migrations
 
                     b.Property<string>("Comment")
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("IndependenceScore")
                         .HasColumnType("integer");
@@ -225,9 +201,6 @@ namespace InternshipManager.Api.Migrations
 
                     b.Property<TimeSpan?>("BreakDuration")
                         .HasColumnType("interval");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone");

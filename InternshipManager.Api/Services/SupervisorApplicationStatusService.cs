@@ -37,7 +37,6 @@ public class SupervisorApplicationStatusService
         if (acceptedCount >= application.RequestedStudentsCount)
         {
             application.Status = SupervisorApplicationStatus.Удовлетворена;
-            application.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
         else if (application.Status == SupervisorApplicationStatus.Удовлетворена)
@@ -45,10 +44,7 @@ public class SupervisorApplicationStatusService
             // Студент отозвал заявку и количество стало меньше нужного
             // То ставим обратно статус Отправлена
             application.Status = SupervisorApplicationStatus.Отправлена;
-            application.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
-
     }
-
 }

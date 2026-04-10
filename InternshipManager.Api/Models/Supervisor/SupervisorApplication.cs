@@ -37,10 +37,6 @@ public class SupervisorApplication
     
     public SupervisorApplicationStatus Status { get; set; } = SupervisorApplicationStatus.Шаблон;
     
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
-    public DateTime? UpdatedAt { get; set; }
-    
     // Навигационные свойства (только для SupervisorApplication)
     public ICollection<StudentSupervisorApplication> StudentSupervisorApplications { get; set; } = new List<StudentSupervisorApplication>();
 }
