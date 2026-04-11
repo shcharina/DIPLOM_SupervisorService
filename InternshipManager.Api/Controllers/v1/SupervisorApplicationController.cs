@@ -447,6 +447,44 @@ public class SupervisorApplicationController : ControllerBase
 
     }
 
+       
+    // GET api/v1/SupervisorApplication/active-practices/{supervisorId}
+        // Заявки где практика идёт прямо сейчас
+
+    [HttpGet("active-practices/{supervisorId:int}")]
+
+    public async Task<IActionResult> GetActivePractices(
+            EmployeeId supervisorId)
+    {
+        var today = DateTime.UtcNow;
+        // Находим заявки где практика сейчас идёт
+        var applicationIds = await _context.SupervisorApplications
+            .Where(a =>
+                a.IdEmployee == supervisorId &&
+                a.StartDate != null &&
+                a.StartDate <= today &&
+                a.EndDate != null &&
+                a.EndDate >= today)
+            .Select(a => a.IdSupervisorApplication)
+            .ToListAsync();
+
+        // Из них оставляем только те где есть принятые студенты
+        var applicationsWithStudents = await _context.StudentSupervisorApplications
+            .Where(s =>
+                applicationIds.Contains(s.IdSupervisorApplication) &&
+                (s.Status == StudentSupervisorApplicationStatus.Принят ||
+                 s.Status == StudentSupervisorApplicationStatus.ОформлениеДокументов))
+            .Select(s => s.IdSupervisorApplication)
+            .Distinct()
+            .ToListAsync();
+
+        var data = await _context.SupervisorApplications
+            .Where(a => applicationsWithStudents.Contains(a.IdSupervisorApplication))
+            .ToListAsync();
+
+        return Ok(data);
+    }
+
     //Вспомогательный метод ToResponseDto
     private static SupervisorApplicationResponseDto ToResponseDto(
         Models.Supervisor.SupervisorApplication app)
