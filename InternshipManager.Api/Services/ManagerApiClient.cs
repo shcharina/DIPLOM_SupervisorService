@@ -148,4 +148,50 @@ public class ManagerApiClient
             return new List<ScheduledPracticeExternalDto>();
         }
     }
-}
+
+    public async Task<TestingResultExternalDto?> GetTestingResultAsync(
+        StudentApplicationId studentApplicationId)
+    {    
+        try    
+        {    
+            var response = await _httpClient    
+                .GetAsync($"/api/v1/Testing/{studentApplicationId}");
+
+            if (!response.IsSuccessStatusCode) return null;
+
+            return await response.Content    
+                .ReadFromJsonAsync<TestingResultExternalDto>();
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                "Сервис менеджера недоступен: {error}", ex.Message);
+
+            return null;
+        }
+    }
+
+    public async Task<ManagerInterviewResultExternalDto?> GetManagerInterviewResultAsync(
+        StudentApplicationId studentApplicationId)
+    {
+        try
+        {
+            var response = await _httpClient
+                .GetAsync($"/api/v1/ManagerInterview/{studentApplicationId}");
+
+            if (!response.IsSuccessStatusCode) return null;
+
+            return await response.Content
+                .ReadFromJsonAsync<ManagerInterviewResultExternalDto>();
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                "Сервис менеджера недоступен: {error}", ex.Message);
+
+            return null;
+        }
+    }
+}    

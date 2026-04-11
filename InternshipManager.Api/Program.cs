@@ -16,7 +16,7 @@ builder.Services.AddScoped<SupervisorApplicationStatusService>();
 // Фоновая задача проверки дат
 builder.Services.AddHostedService<SupervisorApplicationDeadlineCheckerService>();
 
-// HTTP клиент для сервиса менеджера
+
 builder.Services.AddHttpClient<ManagerApiClient>(client =>
 {
     client.BaseAddress = new Uri(
@@ -24,6 +24,16 @@ builder.Services.AddHttpClient<ManagerApiClient>(client =>
         ?? "http://localhost:5001");
         
     client.Timeout = TimeSpan.FromSeconds(10); });
+
+// HTTP клиент для сервиса студента
+builder.Services.AddHttpClient<StudentApiClient>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["Services:StudentApi"]
+        ?? "http://localhost:5003");
+
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 
 //Версионирование API
 builder.Services.AddApiVersioning(options =>

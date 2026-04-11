@@ -131,7 +131,37 @@ public class SupervisorReviewController : ControllerBase
             message = "Отзыв успешно оставлен"
 
         });
+    }
+    
+    // GET api/v1/SupervisorReview/{idEmployee}/{idStudentApplication}
+    // Менеджер или студент получает отзыв руководителя
 
+    [HttpGet("{idEmployee:int}/{idStudentApplication:int}")]
+
+    public async Task<IActionResult> GetReview(
+        EmployeeId idEmployee,
+        StudentApplicationId idStudentApplication)
+    {
+        var review = await _context.SupervisorReviews
+            .FirstOrDefaultAsync(r =>
+                r.IdEmployee == idEmployee &&
+                r.IdStudentApplication == idStudentApplication);
+
+        if (review == null)
+            return NotFound(new { detail = "Отзыв не найден" });
+
+        return Ok(new
+        {
+            idEmployee = review.IdEmployee,
+            idStudentApplication = review.IdStudentApplication,
+            recommendedForEmployment = review.RecommendedForEmployment,
+            pvScore = review.PvScore,
+            skillsScore = review.SkillsScore,
+            independenceScore = review.IndependenceScore,
+            teamworkScore = review.TeamworkScore,
+            overallScore = review.OverallScore,
+            comment = review.Comment
+        });
     }
 
 }
