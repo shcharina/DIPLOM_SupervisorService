@@ -83,9 +83,6 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
                     acceptedCount,
                     application.RequestedStudentsCount);
             }
-
-            application.UpdatedAt = DateTime.UtcNow;
-
         }
 
         await context.SaveChangesAsync();
@@ -131,11 +128,7 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
 
                     // тут потом добавить какую-нибудь функцию типа уведомление руководителю    
                 }
-
             }
-
         }
-
     }
-
 }

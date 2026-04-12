@@ -8,21 +8,22 @@ namespace InternshipManager.Api.Models.Supervisor;
 public class SupervisorApplication
 {
     [Key]
-    public Guid IdSupervisorApplication { get; set; } = Guid.NewGuid();
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать при возврате GUid
+    public SupervisorApplicationId IdSupervisorApplication { get; set; } // = Guid.NewGuid();
     
     [Required]
-    public Guid IdEmployee { get; set; }  // Руководитель, отвечающий за практику в заявке
+    public EmployeeId IdEmployee { get; set; }  // Руководитель, отвечающий за практику в заявке
     
-    public Guid? IdCreatedBy { get; set; }  // Кто создал (Employee)
+    public EmployeeId? IdCreatedBy { get; set; }  // Кто создал (Employee)
     
     // FK на общую БД (храним только ID)
     [Required]
-    public int IdSpecialization { get; set; }
+    public SpecializationId IdSpecialization { get; set; }
     [Required]
-    public int IdDepartment { get; set; }
+    public DepartmentId IdDepartment { get; set; }
     [Required]
-    public int IdAddress { get; set; }
-    public int? IdScheduledPractice { get; set; }  // Если выбрана практика из расписания
+    public AddressId IdAddress { get; set; }
+    public ScheduledPracticeId? IdScheduledPractice { get; set; }  // Если выбрана практика из расписания
     
     [Required]
     public int RequestedStudentsCount { get; set; }
@@ -35,10 +36,6 @@ public class SupervisorApplication
     public bool IsPaid { get; set; } = false;
     
     public SupervisorApplicationStatus Status { get; set; } = SupervisorApplicationStatus.Шаблон;
-    
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
-    public DateTime? UpdatedAt { get; set; }
     
     // Навигационные свойства (только для SupervisorApplication)
     public ICollection<StudentSupervisorApplication> StudentSupervisorApplications { get; set; } = new List<StudentSupervisorApplication>();

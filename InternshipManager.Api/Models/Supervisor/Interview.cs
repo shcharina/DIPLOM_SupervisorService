@@ -9,20 +9,19 @@ public class Interview
 {
     [Key]
     [ForeignKey(nameof(InterviewSlot))]
-    public int IdInterviewSlot { get; set; }  // PK и FK одновременно (1:1)
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public InterviewSlotId IdInterviewSlot { get; set; }  // PK и FK одновременно (1:1)
 
-    public Guid IdStudentApplication { get; set; }
+    public StudentApplicationId IdStudentApplication { get; set; }
 
     public InterviewType InterviewType { get; set; } = InterviewType.Руководитель;
+    
+    public InterviewStatus Status { get; set; } = InterviewStatus.Назначено;
     
     [Required]
     public bool Result { get; set; }  // true - принят, false - отклонён
     
     public string? Comment { get; set; }
-    
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
-    public DateTime? UpdatedAt { get; set; }
     
     // Навигационные свойства
     public InterviewSlot? InterviewSlot { get; set; }

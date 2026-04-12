@@ -6,12 +6,13 @@ namespace InternshipManager.Api.Models.Supervisor;
 public class TimeInterval
 {
     [Key]
-    public int IdInterval { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    public IntervalId IdInterval { get; set; }
     
     [Required]
-    public Guid IdEmployee { get; set; }  // Кто будет проводить собеседования
+    public EmployeeId IdEmployee { get; set; }  // Кто будет проводить собеседования
     
-    public Guid? IdCreator { get; set; }  // Кто создал (если null или равен IdEmployee - создал сам руководитель)
+    public EmployeeId? IdCreator { get; set; }  // Кто создал (если null или равен IdEmployee - создал сам руководитель)
     
     [Required]
     public DateTime StartTime { get; set; }
@@ -23,9 +24,7 @@ public class TimeInterval
     public int MaxCount { get; set; }  // Максимум студентов в этот интервал
     
     public TimeSpan? BreakDuration { get; set; }  // Перерыв между слотами
-    
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
+
     // Навигационные свойства
     public ICollection<InterviewSlot> InterviewSlots { get; set; } = new List<InterviewSlot>();
 }

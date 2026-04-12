@@ -2,9 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InternshipManager.Api.DTOs.InterviewSlot;
 
-public class RejectSlotDto
+public class BookSlotDto
 {
     [Required]
-    [MaxLength(500)]
-    public string Comment { get; set; } = string.Empty;
+    public StudentApplicationId IdStudentApplication { get; set; }
 }

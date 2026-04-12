@@ -1,4 +1,3 @@
-using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +5,8 @@ using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
 using InternshipManager.Api.Models.Supervisor;
 using InternshipManager.Api.DTOs.InterviewSlot;
+
+namespace InternshipManager.Api.Controllers;
 
 [ApiController]
 [Asp.Versioning.ApiVersion("1.0")]
@@ -24,9 +25,9 @@ public class InterviewSlotController : ControllerBase
 
     // Руководитель видит слоты на согласование (предложенные менеджером)
 
-    [HttpGet("pending/{supervisorId:guid}")]
+    [HttpGet("pending/{supervisorId:int}")] //:guid
 
-    public async Task<IActionResult> GetPending(Guid supervisorId)
+    public async Task<IActionResult> GetPending(EmployeeId supervisorId)
     {
         var slots = await _context.InterviewSlots
             .Where(s => s.IdEmployee == supervisorId
@@ -42,7 +43,7 @@ public class InterviewSlotController : ControllerBase
 
     [HttpPut("{id}/confirm")]
 
-    public async Task<IActionResult> Confirm(int id)
+    public async Task<IActionResult> Confirm(InterviewSlotId id)
     {
         var slot = await _context.InterviewSlots.FindAsync(id);
         if (slot == null)
@@ -57,7 +58,6 @@ public class InterviewSlotController : ControllerBase
             });
 
         slot.Status = InterviewSlotStatus.Подтвержден;
-        slot.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -77,7 +77,7 @@ public class InterviewSlotController : ControllerBase
 
     [HttpPut("{id}/reject")]
 
-    public async Task<IActionResult> Reject(int id, [FromBody] RejectSlotDto dto)
+    public async Task<IActionResult> Reject(InterviewSlotId id, [FromBody] RejectSlotDto dto)
     {
         var slot = await _context.InterviewSlots.FindAsync(id);
         if (slot == null)
@@ -92,7 +92,6 @@ public class InterviewSlotController : ControllerBase
 
         slot.Status = InterviewSlotStatus.Отменен;
         slot.RejectionComment = dto.Comment;
-        slot.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -114,8 +113,8 @@ public class InterviewSlotController : ControllerBase
     [HttpPut("{id}/publish")]
 
     public async Task<IActionResult> Publish(
-        int id,
-        [FromQuery] Guid? supervisorApplicationId = null)
+        InterviewSlotId id,
+        [FromQuery] SupervisorApplicationId? supervisorApplicationId = null)
     {
         var slot = await _context.InterviewSlots.FindAsync(id);
 
@@ -129,7 +128,7 @@ public class InterviewSlotController : ControllerBase
                 detail = "Публиковать можно только подтверждённые слоты"
             });
 
-        List<Guid> eligibleStudents;
+        List<StudentApplicationId> eligibleStudents;
         string scope;
 
         if (supervisorApplicationId.HasValue)
@@ -181,7 +180,6 @@ public class InterviewSlotController : ControllerBase
         slot.IdSupervisorApplication = supervisorApplicationId; // null если все заявки
 
         slot.Status = InterviewSlotStatus.Опубликован;
-        slot.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -199,20 +197,31 @@ public class InterviewSlotController : ControllerBase
     }
 
     // GET api/v1/InterviewSlot/available/{supervisorId}
-
     // Студент видит опубликованные слоты руководителя
 
-    /*
-    [HttpGet("available/{supervisorId:guid}")]
+    [HttpGet("available/{supervisorId:int}")] //:guid
 
-    public async Task<IActionResult> GetAvailable(Guid supervisorId)
+    public async Task<IActionResult> GetAvailable(
+        EmployeeId supervisorId,
+        [FromQuery] StudentApplicationId studentApplicationId)
     {
+        // Ищем заявки руководителя, где студент приглашен на собеседование
+        var eligibleApplicationIds = await _context.StudentSupervisorApplications
+        .Where(s =>
+                s.IdStudentApplication == studentApplicationId &&
+                s.Status == StudentSupervisorApplicationStatus.Собеседование)
+            .Select(s => s.IdSupervisorApplication)
+            .ToListAsync();
+
         var slots = await _context.InterviewSlots
-            .Where(s => s.IdEmployee == supervisorId
-                     && s.Status == InterviewSlotStatus.Опубликован)
+            .Where(s =>
+                    s.IdEmployee == supervisorId &&
+                    s.Status == InterviewSlotStatus.Опубликован &&
+                    s.IdSupervisorApplication.HasValue &&
+                    eligibleApplicationIds.Contains(s.IdSupervisorApplication.Value))
             .Select(s => new
             {
-                id = s.IdInterviewSlot,
+                idInterviewSlot = s.IdInterviewSlot,
                 startTime = s.StartTime,
                 endTime = s.EndTime,
                 meetingPlace = s.MeetingPlace
@@ -220,10 +229,66 @@ public class InterviewSlotController : ControllerBase
             .ToListAsync();
 
         return Ok(slots);
-
     }
-    */
 
+    // PUT api/v1/InterviewSlot/{id}/book
+    // Студент бронирует слот
+    [HttpPut("{id:int}/book")]
 
+    public async Task<IActionResult> Book(
+        InterviewSlotId id,
+        [FromBody] BookSlotDto dto)
+    {
+        var slot = await _context.InterviewSlots
+            .Include(s => s.Interview)
+            .FirstOrDefaultAsync(s => s.IdInterviewSlot == id);
+
+        if (slot == null)
+            return NotFound(new { detail = "Слот не найден" });
+        if (slot.Status != InterviewSlotStatus.Опубликован)
+            return BadRequest(new
+            {
+                type = "business_error",
+                detail = "Слот недоступен для бронирования"
+            });
+
+        // Проверяем право студента на этот слот
+        if (slot.IdSupervisorApplication.HasValue)
+        {
+            var isEligible = await _context.StudentSupervisorApplications
+                .AnyAsync(s =>
+                    s.IdSupervisorApplication == slot.IdSupervisorApplication &&
+                    s.IdStudentApplication == dto.IdStudentApplication &&
+                    s.Status == StudentSupervisorApplicationStatus.Собеседование);
+
+            if (!isEligible)
+                return BadRequest(new
+                {
+                    type = "business_error",
+                    detail = "Студент не может записаться на этот слот"
+                });
+        }
+        slot.Status = InterviewSlotStatus.Занят;
+
+        var interview = new Interview
+        {
+            IdInterviewSlot = id,
+            IdStudentApplication = dto.IdStudentApplication,
+            InterviewType = InterviewType.Руководитель,
+            Status = InterviewStatus.Назначено,
+            Result = false
+        };
+
+        _context.Interviews.Add(interview);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            idInterviewSlot = id,
+            message = $"Собеседование назначено на " +
+                      $"{slot.StartTime:dd MMMM} в " +
+                      $"{slot.StartTime:HH:mm}"
+        });
+    }
 }
-

@@ -29,9 +29,9 @@ public class InterviewController : ControllerBase
 
     // Руководитель видит все свои назначенные собеседования
 
-    [HttpGet("supervisor/{supervisorId:guid}")]
+    [HttpGet("supervisor/{supervisorId}")] // здесь убран Guid !!!! :guid
 
-    public async Task<IActionResult> GetBySupervisor(Guid supervisorId)
+    public async Task<IActionResult> GetBySupervisor(EmployeeId supervisorId)
     {
         var interviews = await _context.Interviews
             .Join(_context.InterviewSlots,
@@ -49,8 +49,6 @@ public class InterviewController : ControllerBase
                 interviewType = x.Interview.InterviewType,
                 result = x.Interview.Result,
                 comment = x.Interview.Comment,
-                createdAt = x.Interview.CreatedAt,
-                updatedAt = x.Interview.UpdatedAt
             })
             .ToListAsync();
 
@@ -61,9 +59,9 @@ public class InterviewController : ControllerBase
 
     // Одно собеседование по ID слота
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:int}")] //:guid
 
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(InterviewSlotId id)
     {
         var interview = await _context.Interviews
             .Join(_context.InterviewSlots,
@@ -96,10 +94,10 @@ public class InterviewController : ControllerBase
 
     // Руководитель записывает результат собеседования
 
-    [HttpPut("{id:int}/result")]
+    [HttpPut("{id:int}/result")] //:guid
 
     public async Task<IActionResult> RecordResult(
-        int id,
+        InterviewSlotId id,
         [FromBody] RecordInterviewResultDto dto)
     {
         var interview = await _context.Interviews.FindAsync(id);
@@ -110,7 +108,7 @@ public class InterviewController : ControllerBase
         // Записываем результат
         interview.Result = dto.Result;
         interview.Comment = dto.Comment;
-        interview.UpdatedAt = DateTime.UtcNow;
+        interview.Status = InterviewStatus.Прошло;
 
         // Находим связку студент-заявка
         var slot = await _context.InterviewSlots.FindAsync(id);
@@ -135,7 +133,6 @@ public class InterviewController : ControllerBase
                 link.Status = dto.Result
                     ? StudentSupervisorApplicationStatus.ОформлениеДокументов
                     : StudentSupervisorApplicationStatus.Отказано;
-                link.UpdatedAt = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();
