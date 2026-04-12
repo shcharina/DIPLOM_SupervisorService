@@ -3,7 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 
 using InternshipManager.Api.Services;
 
-namespace InternshipManager.Api.Controllers;
+namespace InternshipManager.Api.Controllers; 
+
+[ApiController]
+[Asp.Versioning.ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 
 public class ReferenceController : ControllerBase
 {
