@@ -38,7 +38,6 @@ public class InterviewSlotController : ControllerBase
     }
 
     // PUT api/v1/InterviewSlot/{id}/confirm
-
     // Руководитель подтверждает слот
 
     [HttpPut("{id}/confirm")]
@@ -72,7 +71,6 @@ public class InterviewSlotController : ControllerBase
     }
 
     // PUT api/v1/InterviewSlot/{id}/reject
-
     // Руководитель отклоняет слот с комментарием
 
     [HttpPut("{id}/reject")]
@@ -107,7 +105,6 @@ public class InterviewSlotController : ControllerBase
 
     // PUT api/v1/InterviewSlot/{id}/publish?supervisorApplicationId={guid} - одна заявка
     // PUT api/v1/InterviewSlot/{id}/publish - все заявки
-
     // Публикация слота - становится доступным студентам
 
     [HttpPut("{id}/publish")]
@@ -195,6 +192,31 @@ public class InterviewSlotController : ControllerBase
         });
 
     }
+
+    // GET /api/v1/InterviewSlot/supervisor/{supervisorId}
+    // Загрузка слотов, принадлежащих руководителю
+    
+    [HttpGet("supervisor/{supervisorId:int}")]
+
+    public async Task<IActionResult> GetBySupervisor(EmployeeId supervisorId)
+    {
+        var slots = await _context.InterviewSlots
+            .Where(s => s.IdEmployee == supervisorId
+                     && s.Status != InterviewSlotStatus.Отменен)
+            .OrderByDescending(s => s.StartTime)
+            .Select(s => new
+            {
+                idInterviewSlot = s.IdInterviewSlot,
+                startTime = s.StartTime,
+                endTime = s.EndTime,
+                meetingPlace = s.MeetingPlace,
+                status = s.Status
+            })
+            .ToListAsync();
+
+        return Ok(slots);
+    }
+
 
     // GET api/v1/InterviewSlot/available/{supervisorId}
     // Студент видит опубликованные слоты руководителя
