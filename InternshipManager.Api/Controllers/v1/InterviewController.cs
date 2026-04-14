@@ -50,6 +50,7 @@ public class InterviewController : ControllerBase
                 result = x.Interview.Result,
                 comment = x.Interview.Comment,
             })
+            .AsNoTracking()
             .ToListAsync();
 
         return Ok(interviews);
