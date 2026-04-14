@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 using InternshipManager.Api.Models.Supervisor;
 
@@ -20,6 +21,21 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+                // Глобальная настройка для всех DateTime свойств
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime))
+                {
+                    property.SetValueConverter(new UtcDateTimeConverter());
+                }
+                else if (property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(new UtcNullableDateTimeConverter());
+                }
+            }
+        }
         // Составной ключ для StudentSupervisorApplication
         modelBuilder.Entity<StudentSupervisorApplication>()
             .HasKey(x => new { x.IdSupervisorApplication, x.IdStudentApplication });
@@ -28,5 +44,24 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<SupervisorReview>()
             .HasKey(x => new { x.IdEmployee, x.IdStudentApplication });
     }
+}
 
+public class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
+{
+    public UtcDateTimeConverter() 
+        : base(
+            v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+        )
+    { }
+}
+
+public class UtcNullableDateTimeConverter : ValueConverter<DateTime?, DateTime?>
+{
+    public UtcNullableDateTimeConverter() 
+        : base(
+            v => v.HasValue && v.Value.Kind != DateTimeKind.Utc ? v.Value.ToUniversalTime() : v,
+            v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v
+        )
+    { }
 }
