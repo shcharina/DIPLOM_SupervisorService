@@ -20,7 +20,7 @@ public class StudentApiClient
         try
         {
             var response = await _httpClient
-                .GetAsync($"/api/v1/StudentApplication/{id}");
+                .GetAsync($"/api/v1/Application/{id}");
 
             if (!response.IsSuccessStatusCode) return null;
             return await response.Content
