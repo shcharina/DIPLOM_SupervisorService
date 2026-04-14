@@ -3,12 +3,23 @@ using Asp.Versioning;
 
 using InternshipManager.Api.Data;
 using InternshipManager.Api.Services;
+using InternshipManager.Api.Services.Interfaces;
+using InternshipManager.Api.Repositories;
+using InternshipManager.Api.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Подключение к PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Репозитории
+builder.Services.AddScoped<ISupervisorApplicationRepository,
+    SupervisorApplicationRepository>();
+
+// Сервисы
+builder.Services.AddScoped<ISupervisorApplicationService,
+    SupervisorApplicationService>();
 
 // Вспомогательный сервис проверки статуса
 builder.Services.AddScoped<SupervisorApplicationStatusService>();

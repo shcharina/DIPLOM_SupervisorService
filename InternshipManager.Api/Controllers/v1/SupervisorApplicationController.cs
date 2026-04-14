@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Asp.Versioning;
-using Microsoft.EntityFrameworkCore;
 
-using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
-using InternshipManager.Api.Models.Supervisor;
 using InternshipManager.Api.DTOs.SupervisorApplication;
-using InternshipManager.Api.Services;
+using InternshipManager.Api.Services.Interfaces;
 
 namespace InternshipManager.Api.Controllers;
 
@@ -16,27 +12,13 @@ namespace InternshipManager.Api.Controllers;
 
 public class SupervisorApplicationController : ControllerBase
 {
-
-    private readonly AppDbContext _context;
-    private readonly SupervisorApplicationStatusService _statusService;
-    private readonly ManagerApiClient _managerApi;
-
-    public SupervisorApplicationController(
-        AppDbContext context,
-        SupervisorApplicationStatusService statusService,
-        ManagerApiClient managerApi)
+    private readonly ISupervisorApplicationService _service;
+    public SupervisorApplicationController(ISupervisorApplicationService service)
     {
-        _context = context;
-        _statusService = statusService;
-        _managerApi = managerApi;
+        _service = service;
     }
 
-    // GET api/v1/SupervisorApplication/supervisor/{supervisorId}
-
-    [HttpGet("supervisor/{supervisorId:int}")]  // здесь убран Guid !!!! :guid
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-
+    [HttpGet("supervisor/{supervisorId:int}")]
     public async Task<IActionResult> GetBySupervisor(
         EmployeeId supervisorId,
         [FromQuery] int page = 1,
@@ -45,23 +27,12 @@ public class SupervisorApplicationController : ControllerBase
     {
         if (page < 1 || pageSize < 1 || pageSize > 100)
             return BadRequest(new { detail = "Некорректные параметры пагинации" });
-
-        var query = _context.SupervisorApplications
-            .Where(a => a.IdEmployee == supervisorId);
-
-        if (status.HasValue)
-            query = query.Where(a => a.Status == status.Value);
-
-        var totalItems = await query.CountAsync();
-
+        
+        var (data, totalItems) = await _service
+            .GetBySupervisorAsync(supervisorId, page, pageSize, status);
+        
         var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-        var data = await query
-            .OrderByDescending(a => a.IdSupervisorApplication)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
+        
         return Ok(new
         {
             data,
@@ -70,443 +41,119 @@ public class SupervisorApplicationController : ControllerBase
                 currentPage = page,
                 pageSize,
                 totalPages,
-                totalItems,
-                hasNextPage = page < totalPages,
-                hasPreviousPage = page > 1
+                totalItems
             }
         });
     }
 
-    // GET api/v1/SupervisorApplication/{id}
-
-    [HttpGet("{id:int}")] // убран :guid
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(SupervisorApplicationId id)
     {
-        var application = await _context.SupervisorApplications
-            .FirstOrDefaultAsync(a => a.IdSupervisorApplication == id);
-
+        var application = await _service.GetByIdAsync(id);
+        
         if (application == null)
             return NotFound(new { detail = "Заявка не найдена" });
 
         return Ok(application);
     }
 
-    // GET api/v1/SupervisorApplication/active
-
-    [HttpGet("active")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-
-    public async Task<IActionResult> GetActive(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
-
-    {
-        var query = _context.SupervisorApplications
-            .Where(a => a.Status == SupervisorApplicationStatus.Отправлена);
-
-        var totalItems = await query.CountAsync();
-        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-        var data = await query
-            .OrderByDescending(a => a.IdSupervisorApplication)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return Ok(new
-        {
-            data,
-            pagination = new
-            {
-                currentPage = page,
-                pageSize,
-                totalPages,
-                totalItems,
-                hasNextPage = page < totalPages,
-                hasPreviousPage = page > 1
-            }
-        });
-
-    }
-
-    // POST api/v1/SupervisorApplication
-
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-
-    public async Task<IActionResult> Create([FromBody] CreateSupervisorApplicationDto dto)
+    public async Task<IActionResult> Create(
+        [FromBody] CreateSupervisorApplicationDto dto)
     {
-        var supervisor = await _managerApi.GetSupervisorByIdAsync(dto.SupervisorId);
-
-        if (supervisor == null || supervisor.Role != 1)
-            return NotFound(new
-            {
-                type = "not_found",
-                detail = "Руководитель с таким ID не найден"
-            }
-            );
-
-        SpecializationId idSpecialization;
-        DateTime? startDate;
-        DateTime? endDate;
-
-        if (dto.IdScheduledPractice.HasValue)
-            {
-                //Берем из БД данные об практиках из расписания
-                var scheduledPractice = await _managerApi
-                    .GetScheduledPracticeAsync(dto.IdScheduledPractice.Value);
-                    
-                if (scheduledPractice == null)
-                    return NotFound(new
-                    {
-                        type = "not_found",
-                        detail = "Практика из расписания не найдена"
-                    });
-
-                // Берём данные из расписания
-                idSpecialization = scheduledPractice.IdSpecialization;
-                startDate = scheduledPractice.StartDate;
-                endDate = scheduledPractice.EndDate;   
-
-            }
-        else
-            {
-                // Ручное заполнение - все поля обязательны
-                if (dto.IdSpecialization == null || dto.StartDate == null || dto.EndDate == null)
-                        return BadRequest(new
-                        {
-                            type = "validation_error",
-                            detail = "Если не указана практика из расписания, нужно указать специализацию, дату начала и дату конца"
-                        });
-
-                    // Дата окончания должна быть позже даты начала
-
-                    if (dto.StartDate >= dto.EndDate)
-                        return BadRequest(new
-                        {
-                            type = "validation_error",
-                            detail = "Дата окончания должна быть позже даты начала"
-                        });
-
-                    idSpecialization = dto.IdSpecialization.Value;
-                    startDate = dto.StartDate;
-                    endDate = dto.EndDate;
-            }
-
-        // Создаём модель из DTO
-
-        var application = new Models.Supervisor.SupervisorApplication
+        try
         {
-            // IdSupervisorApplication = Guid.NewGuid(), -- раскомментировать после возврата Guid
-            IdEmployee = dto.SupervisorId,
-            IdSpecialization = idSpecialization,
-            IdDepartment = dto.IdDepartment,
-            IdAddress = dto.IdAddress,
-            IdScheduledPractice = dto.IdScheduledPractice,
-            StartDate = startDate,
-            EndDate = endDate,
-            RequestedStudentsCount = dto.RequestedStudentsCount,
-            PracticeFormat = dto.PracticeFormat,
-            IsPaid = dto.IsPaid,
-            Status = SupervisorApplicationStatus.Шаблон,
-        };
-
-        _context.SupervisorApplications.Add(application);
-        await _context.SaveChangesAsync();
-
-        // Возвращаем DTO, а не модель
-
-        return CreatedAtAction(nameof(GetById),
-            new { id = application.IdSupervisorApplication, version = "1" },
-            ToResponseDto(application));
-
+            var result = await _service.CreateAsync(dto);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = result.IdSupervisorApplication, version = "1" },
+                result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { detail = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { type = "validation_error", detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { type = "business_error", detail = ex.Message });
+        }
     }
 
-
-    // PUT api/v1/SupervisorApplication/{id}
-
-    [HttpPut("{id:int}")] //:guid после возврата
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-
-    public async Task<IActionResult> Update(SupervisorApplicationId id, [FromBody] UpdateSupervisorApplicationDto dto)
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(
+        SupervisorApplicationId id,
+        [FromBody] UpdateSupervisorApplicationDto dto)
     {
-        var application = await _context.SupervisorApplications.FindAsync(id);
-
-        if (application == null)
-            return NotFound(new { detail = "Заявка не найдена" });
-
-        if (application.Status != SupervisorApplicationStatus.Шаблон)
-            return BadRequest(new
-            {
-                type = "business_error",
-                detail = $"Нельзя редактировать заявку в статусе {application.Status}"
-            });
-
-        // Обновляем только те поля, которые пришли
-
-        if (dto.IdSpecialization.HasValue) application.IdSpecialization = dto.IdSpecialization.Value;
-        if (dto.IdDepartment.HasValue) application.IdDepartment = dto.IdDepartment.Value;
-        if (dto.IdAddress.HasValue) application.IdAddress = dto.IdAddress.Value;
-        if (dto.IdScheduledPractice.HasValue) application.IdScheduledPractice = dto.IdScheduledPractice;
-        if (dto.RequestedStudentsCount.HasValue) application.RequestedStudentsCount = dto.RequestedStudentsCount.Value;
-        if (dto.PracticeFormat.HasValue) application.PracticeFormat = dto.PracticeFormat.Value;
-        if (dto.IsPaid.HasValue) application.IsPaid = dto.IsPaid.Value;
-        if (dto.StartDate.HasValue) application.StartDate = dto.StartDate;
-        if (dto.EndDate.HasValue) application.EndDate = dto.EndDate;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(ToResponseDto(application));
+        try
+        {
+            var result = await _service.UpdateAsync(id, dto);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { type = "business_error", detail = ex.Message });
+        }
     }
 
-    // DELETE api/v1/SupervisorApplication/{id}
-
-    [HttpDelete("{id:int}")] //:guid
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(SupervisorApplicationId id)
     {
-        var application = await _context.SupervisorApplications.FindAsync(id);
-        if (application == null)
-            return NotFound(new { detail = "Заявка не найдена" });
-
-        if (application.Status != SupervisorApplicationStatus.Шаблон)
-            return BadRequest(new
-            {
-                type = "business_error",
-                detail = "Удалить можно только заявку в статусе Шаблон"
-            });
-
-        _context.SupervisorApplications.Remove(application);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _service.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { type = "business_error", detail = ex.Message });
+        }
     }
 
-    // PUT api/v1/SupervisorApplication/{id}/send
-
-    [HttpPut("{id:int}/send")] //:guid
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-
+    [HttpPut("{id:int}/send")]
     public async Task<IActionResult> Send(SupervisorApplicationId id)
     {
-        var application = await _context.SupervisorApplications.FindAsync(id);
-
-        if (application == null)
-            return NotFound(new { detail = "Заявка не найдена" });
-
-        if (application.Status != SupervisorApplicationStatus.Шаблон)
-            return BadRequest(new
-            {
-                type = "business_error",
-                detail = $"Невозможно отправить заявку в статусе {application.Status}"
-            });
-
-        application.Status = SupervisorApplicationStatus.Отправлена;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
+        try
         {
-            idSupervisorApplication = application.IdSupervisorApplication,
-            status = application.Status,
-            message = "Заявка успешно отправлена"
-        });
-
-    }
-
-    // PUT api/v1/SupervisorApplication/{id}/cancel
-
-    [HttpPut("{id:int}/cancel")] //:guid
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-
-    public async Task<IActionResult> Cancel(SupervisorApplicationId id)
-    {
-        var application = await _context.SupervisorApplications.FindAsync(id);
-
-        if (application == null)
-            return NotFound(new { detail = "Заявка не найдена" });
-
-        if (application.Status != SupervisorApplicationStatus.Шаблон &&
-            application.Status != SupervisorApplicationStatus.Отправлена)
-            return BadRequest(new
-            {
-                type = "business_error",
-                detail = $"Нельзя отменить заявку в статусе {application.Status}"
-            });
-
-        // Откреплям студентов которых ещё можно открепить
-        // (не трогаем тех у кого уже Принят или ОформлениеДокументов после проведённого собеседования)
-        var studentsToDetach = await _context.StudentSupervisorApplications
-            .Where(s =>
-                s.IdSupervisorApplication == id &&
-                s.Status != StudentSupervisorApplicationStatus.Отказано)
-            .ToListAsync();
-
-        foreach (var student in studentsToDetach)
-        {
-            student.Status = StudentSupervisorApplicationStatus.Отказано;
+            var result = await _service.SendAsync(id);
+            return Ok(result);
         }
-
-        // Отменяем все слоты кроме тех где собеседование уже проведено
-
-        var allSlots = await _context.InterviewSlots
-            .Where(s =>
-                s.IdSupervisorApplication == id &&
-                s.Status != InterviewSlotStatus.Отменен)
-            .Include(s => s.Interview)  // подгружаем связанное собеседование
-            .ToListAsync();
-
-        int cancelledSlots = 0;
-        int skippedSlots = 0;
-
-        foreach (var slot in allSlots)
+        catch (KeyNotFoundException ex)
         {
-            if (slot.Status == InterviewSlotStatus.Занят && slot.Interview != null)
-            {
-                // Собеседование уже проведено (есть результат) → оставляем
-                if (slot.Interview.Status == InterviewStatus.Прошло)
-                {
-                    skippedSlots++;
-                    continue;
-                }
-
-                // Собеседование назначено но НЕ проведено → отменяем всё
-                // Удаляем запись о собеседовании
-                _context.Interviews.Remove(slot.Interview);
-            }
-
-            slot.Status = InterviewSlotStatus.Отменен;
-            cancelledSlots++;
+            return NotFound(new { detail = ex.Message });
         }
-
-        var previousStatus = application.Status;
-        application.Status = SupervisorApplicationStatus.Отменена;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
+        catch (InvalidOperationException ex)
         {
-            idSupervisorApplication = application.IdSupervisorApplication,
-            status = application.Status,
-            previousStatus,
-            detachedStudents = studentsToDetach.Count,
-            cancelledSlots,
-            skippedSlots,  // слоты где собеседование уже состоялось
-            message = $"Заявка отменена. " +
-                      $"Откреплено студентов: {studentsToDetach.Count}. " +
-                      $"Отменено слотов: {cancelledSlots}. " +
-                      $"Сохранено проведённых собеседований: {skippedSlots}"
-        });
-
+            return BadRequest(new { type = "business_error", detail = ex.Message });
+        }
     }
-
-    // PUT api/v1/SupervisorApplication/{id}/close
-
-    [HttpPut("{id:int}/close")] //:guid
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-
+    
+    [HttpPut("{id:int}/close")]
     public async Task<IActionResult> Close(SupervisorApplicationId id)
     {
-        var application = await _context.SupervisorApplications.FindAsync(id);
-        
-        if (application == null)
-            return NotFound(new { detail = "Заявка не найдена" });
-
-        if (application.Status != SupervisorApplicationStatus.Отправлена)
-            return BadRequest(new
-            {
-                type = "business_error",
-                detail = $"Нельзя закрыть заявку в статусе {application.Status}"
-            });
-
-        application.Status = SupervisorApplicationStatus.Закрыта;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
+        try
         {
-            idSupervisorApplication = application.IdSupervisorApplication,
-            status = application.Status,
-            message = "Заявка закрыта досрочно"
-        });
-
-    }
-
-       
-    // GET api/v1/SupervisorApplication/active-practices/{supervisorId}
-        // Заявки где практика идёт прямо сейчас
-
-    [HttpGet("active-practices/{supervisorId:int}")]
-
-    public async Task<IActionResult> GetActivePractices(
-            EmployeeId supervisorId)
-    {
-        var today = DateTime.UtcNow;
-        // Находим заявки где практика сейчас идёт
-        var applicationIds = await _context.SupervisorApplications
-            .Where(a =>
-                a.IdEmployee == supervisorId &&
-                a.StartDate != null &&
-                a.StartDate <= today &&
-                a.EndDate != null &&
-                a.EndDate >= today)
-            .Select(a => a.IdSupervisorApplication)
-            .ToListAsync();
-
-        // Из них оставляем только те где есть принятые студенты
-        var applicationsWithStudents = await _context.StudentSupervisorApplications
-            .Where(s =>
-                applicationIds.Contains(s.IdSupervisorApplication) &&
-                (s.Status == StudentSupervisorApplicationStatus.Принят ||
-                 s.Status == StudentSupervisorApplicationStatus.ОформлениеДокументов))
-            .Select(s => s.IdSupervisorApplication)
-            .Distinct()
-            .ToListAsync();
-
-        var data = await _context.SupervisorApplications
-            .Where(a => applicationsWithStudents.Contains(a.IdSupervisorApplication))
-            .ToListAsync();
-
-        return Ok(data);
-    }
-
-    //Вспомогательный метод ToResponseDto
-    private static SupervisorApplicationResponseDto ToResponseDto(
-        Models.Supervisor.SupervisorApplication app)
-    {
-        return new SupervisorApplicationResponseDto
+            var result = await _service.CloseAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
         {
-            IdSupervisorApplication = app.IdSupervisorApplication,
-            IdEmployee = app.IdEmployee,
-            IdCreatedBy = app.IdCreatedBy,
-            IdSpecialization = app.IdSpecialization,
-            IdDepartment = app.IdDepartment,
-            IdAddress = app.IdAddress,
-            IdScheduledPractice = app.IdScheduledPractice,
-            StartDate = app.StartDate,
-            EndDate = app.EndDate,
-            RequestedStudentsCount = app.RequestedStudentsCount,
-            PracticeFormat = app.PracticeFormat,
-            IsPaid = app.IsPaid,
-            Status = app.Status,
-            IsCreatedByManager = app.IdCreatedBy != null && app.IdCreatedBy != app.IdEmployee,
-            IsFromSchedule = app.IdScheduledPractice != null
-        };
+            return NotFound(new { detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { type = "business_error", detail = ex.Message });
+        }
     }
-
 }
