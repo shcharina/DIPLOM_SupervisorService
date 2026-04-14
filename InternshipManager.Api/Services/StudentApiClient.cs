@@ -50,8 +50,9 @@ public class StudentApiClient
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                "Сервис студента недоступен: {error}", ex.Message);
+            _logger.LogWarning(
+                "Анкета недоступна (эндпоинт ещё не реализован): {error}",
+                ex.Message);
             return null;
         }
     }

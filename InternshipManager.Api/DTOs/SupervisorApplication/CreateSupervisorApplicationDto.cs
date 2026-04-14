@@ -6,7 +6,7 @@ namespace InternshipManager.Api.DTOs.SupervisorApplication;
 public class CreateSupervisorApplicationDto
 {
     [Required]
-    public SupervisorApplicationId SupervisorId { get; set; }          // кто руководитель
+    public EmployeeId SupervisorId { get; set; }          // кто руководитель
 
     public ScheduledPracticeId? IdScheduledPractice { get; set; }   // практика из расписания (необязательно)
 

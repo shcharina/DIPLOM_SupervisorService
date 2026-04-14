@@ -9,7 +9,7 @@ public class Interview
 {
     [Key]
     [ForeignKey(nameof(InterviewSlot))]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // убрать если GUid
+    [DatabaseGenerated(DatabaseGeneratedOption.None)] // убрать если GUid
     public InterviewSlotId IdInterviewSlot { get; set; }  // PK и FK одновременно (1:1)
 
     public StudentApplicationId IdStudentApplication { get; set; }
