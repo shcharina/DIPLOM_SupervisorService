@@ -19,7 +19,7 @@ public class ManagerApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync($"/api/v1/employees/{id}");
+            var response = await _httpClient.GetAsync($"/api/v1/Employee/GetSupervisor/{id}");
 
             if (!response.IsSuccessStatusCode)
                 return null;
@@ -47,7 +47,7 @@ public class ManagerApiClient
         try
         {
             var response = await _httpClient
-                .GetAsync($"/api/v1/scheduled-practices/{id}");
+                .GetAsync($"/api/v1/ScheduledPractice/GetScheduledPractice/{id}");
 
             if (!response.IsSuccessStatusCode)
                 return null;
@@ -68,7 +68,7 @@ public class ManagerApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync("/api/v1/Specialization");
+            var response = await _httpClient.GetAsync("/api/v1/Specialization/GetSpecializations");
             response.EnsureSuccessStatusCode();
 
             return await response.Content
@@ -87,7 +87,7 @@ public class ManagerApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync("/api/v1/Department");
+            var response = await _httpClient.GetAsync("/api/v1/Department/GetDepartments");
             response.EnsureSuccessStatusCode();
 
             return await response.Content
@@ -110,8 +110,8 @@ public class ManagerApiClient
         try
         {
             var url = departmentId.HasValue
-                ? $"/api/v1/addresses?departmentId={departmentId}"
-                : "/api/v1/addresses";
+                ? $"/api/v1/Address/GetAddressesByDepartment/{departmentId}"
+                : "/api/v1/Address/GetAddressesByDepartmen";
 
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
@@ -134,7 +134,7 @@ public class ManagerApiClient
         try
         {
             var response = await _httpClient
-                .GetAsync("/api/v1/scheduled-practices");
+                .GetAsync("/api/v1/ScheduledPractice/GetScheduledPractices");
 
             response.EnsureSuccessStatusCode();
             return await response.Content
