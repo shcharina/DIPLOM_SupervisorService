@@ -1,50 +1,51 @@
-using Microsoft.EntityFrameworkCore;
-
-using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
+using InternshipManager.Api.Repositories.Interfaces;
+using InternshipManager.Api.Services.Interfaces;
 
 namespace InternshipManager.Api.Services;
 
-public class SupervisorApplicationStatusService
+public class SupervisorApplicationStatusService 
+    : ISupervisorApplicationStatusService
 {
-    private readonly AppDbContext _context;
-    public SupervisorApplicationStatusService(AppDbContext context)
+    private readonly ISupervisorApplicationRepository _applicationRepository;
+    private readonly IStudentSupervisorApplicationRepository _studentRepository;
+
+    public SupervisorApplicationStatusService(
+        ISupervisorApplicationRepository applicationRepository,
+        IStudentSupervisorApplicationRepository studentRepository)
     {
-        _context = context;
+        _applicationRepository = applicationRepository;
+        _studentRepository = studentRepository;
     }
 
-    // Вызывается каждый раз когда меняется статус студента
-    public async Task CheckAndUpdateApplicationStatus(SupervisorApplicationId supervisorApplicationId)
+    public async Task CheckAndUpdateApplicationStatus(
+        SupervisorApplicationId supervisorApplicationId)
     {
-        var application = await _context.SupervisorApplications
-            .FirstOrDefaultAsync(a => 
-                a.IdSupervisorApplication == supervisorApplicationId);
+        var application = await _applicationRepository
+            .GetByIdAsync(supervisorApplicationId);
 
         if (application == null) return;
 
-        // Проверяем только активные заявки
+        // Проверяем только заявки в релевантных статусах
         if (application.Status != SupervisorApplicationStatus.Sent &&
-            application.Status != SupervisorApplicationStatus.Satisfied) return;
+            application.Status != SupervisorApplicationStatus.Satisfied)
+            return;
 
-        // Считаем принятых студентов + тех, кто еще в процессе оформления
-        var acceptedCount = await _context.StudentSupervisorApplications
-            .CountAsync(s =>
-                s.IdSupervisorApplication == supervisorApplicationId &&
-                (s.Status == StudentSupervisorApplicationStatus.DocumentProcessing ||
-                 s.Status == StudentSupervisorApplicationStatus.Accepted));
+        // CountAcceptedAsync уже есть в репозитории —
+        // считает студентов со статусом DocumentProcessing или Accepted
+        var acceptedCount = await _studentRepository
+            .CountAcceptedAsync(supervisorApplicationId);
 
-        // Если набрали нужное количество → Удовлетворена
         if (acceptedCount >= application.RequestedStudentsCount)
         {
             application.Status = SupervisorApplicationStatus.Satisfied;
-            await _context.SaveChangesAsync();
+            await _applicationRepository.UpdateAsync(application);
         }
         else if (application.Status == SupervisorApplicationStatus.Satisfied)
         {
-            // Студент отозвал заявку и количество стало меньше нужного
-            // То ставим обратно статус Отправлена
+            // Если кто-то отвалился — откатываем статус обратно
             application.Status = SupervisorApplicationStatus.Sent;
-            await _context.SaveChangesAsync();
+            await _applicationRepository.UpdateAsync(application);
         }
     }
 }

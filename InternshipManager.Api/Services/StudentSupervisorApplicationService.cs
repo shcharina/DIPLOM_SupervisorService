@@ -10,14 +10,14 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
 {
     private readonly IStudentSupervisorApplicationRepository _repository;
     private readonly ISupervisorApplicationRepository _supervisorAppRepository;
-    private readonly SupervisorApplicationStatusService _statusService;
+    private readonly ISupervisorApplicationStatusService _statusService;
     private readonly ManagerApiClient _managerApi;
     private readonly StudentApiClient _studentApi;
 
     public StudentSupervisorApplicationService(
         IStudentSupervisorApplicationRepository repository,
         ISupervisorApplicationRepository supervisorAppRepository,
-        SupervisorApplicationStatusService statusService,
+        ISupervisorApplicationStatusService statusService,
         ManagerApiClient managerApi,
         StudentApiClient studentApi)
     {

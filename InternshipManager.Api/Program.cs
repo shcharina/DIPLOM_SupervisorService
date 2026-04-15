@@ -37,9 +37,8 @@ builder.Services.AddScoped<IInterviewService,
     InterviewService>();
 builder.Services.AddScoped<ISupervisorReviewService,
     SupervisorReviewService>();
-
-// Вспомогательный сервис проверки статуса
-builder.Services.AddScoped<SupervisorApplicationStatusService>();
+builder.Services.AddScoped<ISupervisorApplicationStatusService,
+    SupervisorApplicationStatusService>();
 
 // Фоновая задача проверки дат
 builder.Services.AddHostedService<SupervisorApplicationDeadlineCheckerService>();

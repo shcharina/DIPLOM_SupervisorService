@@ -8,11 +8,11 @@ namespace InternshipManager.Api.Services;
 public class InterviewService : IInterviewService
 {
     private readonly IInterviewRepository _repository;
-    private readonly SupervisorApplicationStatusService _statusService;
+    private readonly ISupervisorApplicationStatusService _statusService;
 
     public InterviewService(
         IInterviewRepository repository,
-        SupervisorApplicationStatusService statusService)
+        ISupervisorApplicationStatusService statusService)
     {
         _repository    = repository;
         _statusService = statusService;
