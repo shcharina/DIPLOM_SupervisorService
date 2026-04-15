@@ -43,6 +43,21 @@ public class SupervisorApplicationRepository : ISupervisorApplicationRepository
         return (data, totalItems);
     }
 
+    public async Task<List<SupervisorApplicationId>> GetCompletedApplicationIdsAsync(
+        EmployeeId supervisorId)
+    {
+        return await _context.SupervisorApplications
+            .AsNoTracking()
+            .Where(a =>
+                a.IdEmployee == supervisorId &&
+                a.EndDate != null &&
+                a.EndDate <= DateTime.UtcNow &&
+                a.Status == SupervisorApplicationStatus.Satisfied)
+            .Select(a => a.IdSupervisorApplication)
+            .ToListAsync();
+    }
+
+
     public async Task<(List<SupervisorApplication> Data, int TotalItems)> 
         GetActiveAsync(int page, int pageSize)
     {

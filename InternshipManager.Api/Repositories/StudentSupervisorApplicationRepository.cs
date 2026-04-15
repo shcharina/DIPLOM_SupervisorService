@@ -142,7 +142,7 @@ public class StudentSupervisorApplicationRepository
     // Для AcceptWithoutInterview: подсчёт уже принятых студентов
     // Источник: _context.StudentSupervisorApplications
     //   .CountAsync(s => s.IdSupervisorApplication == supervisorApplicationId
-    //               && (s.Status == DocumentProcessing || s.Status == Accepted))
+    //               && (s.Status == DocumentProcessing || s.Status == Принят))
     public async Task<int> CountAcceptedAsync(
         SupervisorApplicationId supervisorApplicationId)
     {
@@ -179,4 +179,28 @@ public class StudentSupervisorApplicationRepository
         _context.StudentSupervisorApplications.Update(link);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<List<StudentSupervisorApplication>> GetByApplicationIdsAndStatusAsync(
+        List<SupervisorApplicationId> applicationIds,
+        StudentSupervisorApplicationStatus status)
+    {
+        return await _context.StudentSupervisorApplications
+            .AsNoTracking()
+            .Where(s =>
+                applicationIds.Contains(s.IdSupervisorApplication) &&
+                s.Status == status)
+            .ToListAsync();
+    }
+
+    public async Task<bool> ExistsByStudentAndStatusAsync(
+        StudentApplicationId studentApplicationId,
+        StudentSupervisorApplicationStatus status)
+    {
+        return await _context.StudentSupervisorApplications
+            .AsNoTracking()
+            .AnyAsync(s =>
+                s.IdStudentApplication == studentApplicationId &&
+                s.Status == status);
+    }
+
 }

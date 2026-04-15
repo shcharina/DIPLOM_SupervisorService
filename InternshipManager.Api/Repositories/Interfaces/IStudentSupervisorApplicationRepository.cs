@@ -42,6 +42,14 @@ public interface IStudentSupervisorApplicationRepository
         SupervisorApplicationId supervisorApplicationId,
         StudentApplicationId studentApplicationId);
 
+    Task<List<StudentSupervisorApplication>> GetByApplicationIdsAndStatusAsync(
+        List<SupervisorApplicationId> applicationIds,
+        StudentSupervisorApplicationStatus status);
+
+    Task<bool> ExistsByStudentAndStatusAsync(
+        StudentApplicationId studentApplicationId,
+        StudentSupervisorApplicationStatus status);
+
     Task<int> CountAcceptedAsync(SupervisorApplicationId supervisorApplicationId);
 
     Task<bool> ExistsAsync(

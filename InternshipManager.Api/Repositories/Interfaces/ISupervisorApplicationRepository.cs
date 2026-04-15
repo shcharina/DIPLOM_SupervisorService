@@ -12,6 +12,8 @@ public interface ISupervisorApplicationRepository
     Task<(List<SupervisorApplication> Data, int TotalItems)> GetActiveAsync(
         int page, int pageSize);
     Task<List<SupervisorApplication>> GetActivePracticesAsync(EmployeeId supervisorId);
+    Task<List<SupervisorApplicationId>> GetCompletedApplicationIdsAsync(
+        EmployeeId supervisorId);
     Task<SupervisorApplication> AddAsync(SupervisorApplication application);
     Task UpdateAsync(SupervisorApplication application);
     Task DeleteAsync(SupervisorApplication application);
