@@ -2,7 +2,7 @@ namespace InternshipManager.Api.Enums;
 
 public enum InterviewStatus
 {
-    Отменено = 0,
-    Назначено = 1,
-    Прошло = 2
+    Cancelled = 0,
+    Scheduled = 1,
+    IsOver = 2
 }

@@ -35,7 +35,7 @@ public class InterviewSlotRepository : IInterviewSlotRepository
         return await _context.InterviewSlots
             .AsNoTracking()
             .Where(s => s.IdEmployee == supervisorId
-                     && s.Status == InterviewSlotStatus.ПредложенРуководителю)
+                     && s.Status == InterviewSlotStatus.SuggestedtoSupervisor)
             .ToListAsync();
     }
 
@@ -44,7 +44,7 @@ public class InterviewSlotRepository : IInterviewSlotRepository
         return await _context.InterviewSlots
             .AsNoTracking()
             .Where(s => s.IdEmployee == supervisorId
-                     && s.Status != InterviewSlotStatus.Отменен)
+                     && s.Status != InterviewSlotStatus.Cancelled)
             .OrderByDescending(s => s.StartTime)
             .ToListAsync();
     }
@@ -57,7 +57,7 @@ public class InterviewSlotRepository : IInterviewSlotRepository
             .AsNoTracking()
             .Where(s =>
                 s.IdEmployee == supervisorId &&
-                s.Status == InterviewSlotStatus.Опубликован &&
+                s.Status == InterviewSlotStatus.Published &&
                 s.IdSupervisorApplication.HasValue &&
                 eligibleApplicationIds.Contains(s.IdSupervisorApplication.Value))
             .ToListAsync();

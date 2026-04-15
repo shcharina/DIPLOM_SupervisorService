@@ -31,11 +31,11 @@ public class SupervisorApplication
     public DateTime? StartDate { get; set; }   // Если не из расписания - заполняется вручную
     public DateTime? EndDate { get; set; }     // Если не из расписания - заполняется вручную
     
-    public PracticeFormat PracticeFormat { get; set; } = PracticeFormat.Очная;
+    public PracticeFormat PracticeFormat { get; set; } = PracticeFormat.FullTime;
     
     public bool IsPaid { get; set; } = false;
     
-    public SupervisorApplicationStatus Status { get; set; } = SupervisorApplicationStatus.Шаблон;
+    public SupervisorApplicationStatus Status { get; set; } = SupervisorApplicationStatus.Draft;
     
     // Навигационные свойства (только для SupervisorApplication)
     public ICollection<StudentSupervisorApplication> StudentSupervisorApplications { get; set; } = new List<StudentSupervisorApplication>();

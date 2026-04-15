@@ -102,7 +102,7 @@ public class SupervisorApplicationService : ISupervisorApplicationService
             RequestedStudentsCount = dto.RequestedStudentsCount,
             PracticeFormat = dto.PracticeFormat,
             IsPaid = dto.IsPaid,
-            Status = SupervisorApplicationStatus.Шаблон,
+            Status = SupervisorApplicationStatus.Draft,
         };
 
         await _repository.AddAsync(application);
@@ -116,7 +116,7 @@ public class SupervisorApplicationService : ISupervisorApplicationService
         if (application == null)
             throw new KeyNotFoundException("Заявка не найдена");
 
-        if (application.Status != SupervisorApplicationStatus.Шаблон)
+        if (application.Status != SupervisorApplicationStatus.Draft)
             throw new InvalidOperationException(
                 $"Нельзя редактировать заявку в статусе {application.Status}");
 
@@ -160,7 +160,7 @@ public class SupervisorApplicationService : ISupervisorApplicationService
         if (application == null)
             throw new KeyNotFoundException("Заявка не найдена");
 
-        if (application.Status != SupervisorApplicationStatus.Шаблон)
+        if (application.Status != SupervisorApplicationStatus.Draft)
             throw new InvalidOperationException(
                 "Удалить можно только заявку в статусе Шаблон");
 
@@ -174,11 +174,11 @@ public class SupervisorApplicationService : ISupervisorApplicationService
         if (application == null)
             throw new KeyNotFoundException("Заявка не найдена");
 
-        if (application.Status != SupervisorApplicationStatus.Шаблон)
+        if (application.Status != SupervisorApplicationStatus.Draft)
             throw new InvalidOperationException(
                 $"Невозможно отправить заявку в статусе {application.Status}");
 
-        application.Status = SupervisorApplicationStatus.Отправлена;
+        application.Status = SupervisorApplicationStatus.Sent;
         await _repository.UpdateAsync(application);
 
         return new
@@ -195,11 +195,11 @@ public class SupervisorApplicationService : ISupervisorApplicationService
         if (application == null)
             throw new KeyNotFoundException("Заявка не найдена");
 
-        if (application.Status != SupervisorApplicationStatus.Отправлена)
+        if (application.Status != SupervisorApplicationStatus.Sent)
             throw new InvalidOperationException(
                 $"Нельзя закрыть заявку в статусе {application.Status}");
 
-        application.Status = SupervisorApplicationStatus.Закрыта;
+        application.Status = SupervisorApplicationStatus.ClosedEarly;
         await _repository.UpdateAsync(application);
         return new
         {

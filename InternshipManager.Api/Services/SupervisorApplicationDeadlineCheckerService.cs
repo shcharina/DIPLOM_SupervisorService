@@ -44,7 +44,7 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
         // Находим все отправленные заявки у которых дата начала уже наступила
         var startedApplications = await context.SupervisorApplications
             .Where(a =>
-                a.Status == SupervisorApplicationStatus.Отправлена &&
+                a.Status == SupervisorApplicationStatus.Sent &&
                 a.StartDate != null &&
                 a.StartDate <= DateTime.UtcNow)
             .ToListAsync();
@@ -64,7 +64,7 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
             if (acceptedCount >= application.RequestedStudentsCount)
             {
                 // Набрали нужное количество → Удовлетворена
-                application.Status = SupervisorApplicationStatus.Удовлетворена;
+                application.Status = SupervisorApplicationStatus.Satisfied;
 
                 _logger.LogInformation(
                     "Заявка {id} → Удовлетворена ({count}/{required} студентов)",
@@ -75,7 +75,7 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
             else
             {
                 // Дата наступила, но студентов не хватает → Неудовлетворена
-                application.Status = SupervisorApplicationStatus.Неудовлетворена;
+                application.Status = SupervisorApplicationStatus.Unsatisfied;
 
                 _logger.LogInformation(
                     "Заявка {id} → Неудовлетворена ({count}/{required} студентов)",
@@ -101,7 +101,7 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
             .Where(a =>
             a.EndDate != null &&
             a.EndDate <= DateTime.UtcNow &&
-            a.Status == SupervisorApplicationStatus.Удовлетворена)
+            a.Status == SupervisorApplicationStatus.Satisfied)
             .ToListAsync();
 
         foreach (var application in completedApplications)

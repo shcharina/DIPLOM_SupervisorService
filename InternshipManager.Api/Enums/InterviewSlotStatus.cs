@@ -2,10 +2,10 @@ namespace InternshipManager.Api.Enums;
 
 public enum InterviewSlotStatus
 {
-    Отменен = 0,
-    Черновик = 1,
-    ПредложенРуководителю = 2,
-    Подтвержден = 3,
-    Опубликован = 4,
-    Занят = 5
+    Cancelled = 0,
+    Draft = 1,
+    SuggestedtoSupervisor = 2,
+    Confirmed = 3,
+    Published = 4,
+    Booked = 5
 }

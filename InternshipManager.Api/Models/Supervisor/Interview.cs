@@ -14,9 +14,9 @@ public class Interview
 
     public StudentApplicationId IdStudentApplication { get; set; }
 
-    public InterviewType InterviewType { get; set; } = InterviewType.Руководитель;
+    public InterviewType InterviewType { get; set; } = InterviewType.Supervisor;
     
-    public InterviewStatus Status { get; set; } = InterviewStatus.Назначено;
+    public InterviewStatus Status { get; set; } = InterviewStatus.Scheduled;
     
     [Required]
     public bool Result { get; set; }  // true - принят, false - отклонён

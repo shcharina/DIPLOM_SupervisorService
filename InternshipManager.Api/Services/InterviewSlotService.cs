@@ -47,7 +47,7 @@ public class InterviewSlotService : IInterviewSlotService
         var eligibleApplicationIds = await _studentSupervisorRepository
             .GetApplicationIdsByStudentAndStatusAsync(
                 studentApplicationId,
-                StudentSupervisorApplicationStatus.Собеседование);
+                StudentSupervisorApplicationStatus.Interview);
 
         var slots = await _repository.GetAvailableForStudentAsync(
             supervisorId, eligibleApplicationIds);
@@ -67,11 +67,11 @@ public class InterviewSlotService : IInterviewSlotService
         if (slot == null)
             throw new KeyNotFoundException("Слот не найден");
 
-        if (slot.Status != InterviewSlotStatus.ПредложенРуководителю)
+        if (slot.Status != InterviewSlotStatus.SuggestedtoSupervisor)
             throw new InvalidOperationException(
                 $"Нельзя подтвердить слот в статусе {slot.Status}");
 
-        slot.Status = InterviewSlotStatus.Подтвержден;
+        slot.Status = InterviewSlotStatus.Confirmed;
         await _repository.UpdateAsync(slot);
 
         return new
@@ -88,11 +88,11 @@ public class InterviewSlotService : IInterviewSlotService
         if (slot == null)
             throw new KeyNotFoundException("Слот не найден");
 
-        if (slot.Status != InterviewSlotStatus.ПредложенРуководителю)
+        if (slot.Status != InterviewSlotStatus.SuggestedtoSupervisor)
             throw new InvalidOperationException(
                 $"Нельзя отклонить слот в статусе {slot.Status}");
 
-        slot.Status = InterviewSlotStatus.Отменен;
+        slot.Status = InterviewSlotStatus.Cancelled;
         slot.RejectionComment = dto.Comment;
         await _repository.UpdateAsync(slot);
 
@@ -113,7 +113,7 @@ public class InterviewSlotService : IInterviewSlotService
         if (slot == null)
             throw new KeyNotFoundException("Слот не найден");
 
-        if (slot.Status != InterviewSlotStatus.Подтвержден)
+        if (slot.Status != InterviewSlotStatus.Confirmed)
             throw new InvalidOperationException(
                 "Публиковать можно только подтверждённые слоты");
 
@@ -126,7 +126,7 @@ public class InterviewSlotService : IInterviewSlotService
             eligibleStudents = await _studentSupervisorRepository
                 .GetStudentIdsByApplicationAndStatusAsync(
                     supervisorApplicationId.Value,
-                    StudentSupervisorApplicationStatus.Собеседование);
+                    StudentSupervisorApplicationStatus.Interview);
 
             scope = $"по заявке {supervisorApplicationId.Value}";
         }
@@ -139,7 +139,7 @@ public class InterviewSlotService : IInterviewSlotService
             eligibleStudents = await _studentSupervisorRepository
                 .GetDistinctStudentIdsByApplicationsAndStatusAsync(
                     allApplicationIds,
-                    StudentSupervisorApplicationStatus.Собеседование);
+                    StudentSupervisorApplicationStatus.Interview);
 
             scope = "по всем заявкам руководителя";
         }
@@ -149,7 +149,7 @@ public class InterviewSlotService : IInterviewSlotService
                 $"Нет студентов со статусом Собеседование {scope}");
 
         slot.IdSupervisorApplication = supervisorApplicationId;
-        slot.Status = InterviewSlotStatus.Опубликован;
+        slot.Status = InterviewSlotStatus.Published;
         await _repository.UpdateAsync(slot);
 
         return new
@@ -169,7 +169,7 @@ public class InterviewSlotService : IInterviewSlotService
         if (slot == null)
             throw new KeyNotFoundException("Слот не найден");
 
-        if (slot.Status != InterviewSlotStatus.Опубликован)
+        if (slot.Status != InterviewSlotStatus.Published)
             throw new InvalidOperationException("Слот недоступен для бронирования");
 
         // Бизнес-логика: проверяем право студента на запись
@@ -179,22 +179,22 @@ public class InterviewSlotService : IInterviewSlotService
                 .IsStudentEligibleForSlotAsync(
                     slot.IdSupervisorApplication.Value,
                     dto.IdStudentApplication,
-                    StudentSupervisorApplicationStatus.Собеседование);
+                    StudentSupervisorApplicationStatus.Interview);
 
             if (!isEligible)
                 throw new InvalidOperationException(
                     "Студент не может записаться на этот слот");
         }
 
-        slot.Status = InterviewSlotStatus.Занят;
+        slot.Status = InterviewSlotStatus.Booked;
         await _repository.UpdateAsync(slot);
 
         var interview = new Interview
         {
             IdInterviewSlot = id,
             IdStudentApplication = dto.IdStudentApplication,
-            InterviewType = InterviewType.Руководитель,
-            Status = InterviewStatus.Назначено,
+            InterviewType = InterviewType.Supervisor,
+            Status = InterviewStatus.Scheduled,
             Result = false
         };
         await _repository.AddInterviewAsync(interview);
@@ -232,8 +232,8 @@ public class InterviewSlotService : IInterviewSlotService
                                 || dto.IdCreator == dto.IdEmployee;
 
         var slotStatus = createdBySupervisor
-            ? InterviewSlotStatus.Подтвержден
-            : InterviewSlotStatus.ПредложенРуководителю;
+            ? InterviewSlotStatus.Confirmed
+            : InterviewSlotStatus.SuggestedtoSupervisor;
 
         var slots = GenerateSlots(interval, dto.MaxCount, dto.BreakDuration, slotStatus);
         await _repository.AddRangeAsync(slots);

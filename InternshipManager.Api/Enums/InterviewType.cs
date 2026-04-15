@@ -2,6 +2,6 @@ namespace InternshipManager.Api.Enums;
 
 public enum InterviewType
 {
-    Менеджер = 1,
-    Руководитель = 2
+    Manager = 1,
+    Supervisor = 2
 }

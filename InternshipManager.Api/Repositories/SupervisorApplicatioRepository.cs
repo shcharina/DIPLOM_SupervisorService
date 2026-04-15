@@ -48,7 +48,7 @@ public class SupervisorApplicationRepository : ISupervisorApplicationRepository
     {
         var query = _context.SupervisorApplications
             .AsNoTracking()
-            .Where(a => a.Status == SupervisorApplicationStatus.Отправлена);
+            .Where(a => a.Status == SupervisorApplicationStatus.Sent);
 
         var totalItems = await query.CountAsync();
         var data = await query

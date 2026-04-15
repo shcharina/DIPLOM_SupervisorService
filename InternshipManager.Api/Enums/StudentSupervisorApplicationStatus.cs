@@ -2,9 +2,9 @@ namespace InternshipManager.Api.Enums;
 
 public enum StudentSupervisorApplicationStatus
 {
-    НаРассмотренииРуководителем = 1,
-    Отказано = 2,
-    Собеседование = 3,
-    ОформлениеДокументов = 4,
-    Принят = 5
+    UnderReviewbySupervisor = 1,
+    Rejected = 2,
+    Interview = 3,
+    DocumentProcessing = 4,
+    Accepted = 5
 }

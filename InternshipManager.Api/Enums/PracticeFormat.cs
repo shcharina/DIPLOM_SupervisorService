@@ -2,7 +2,7 @@ namespace InternshipManager.Api.Enums;
 
 public enum PracticeFormat
 {
-    Очная = 1,
-    Дистанционная = 2,
-    Гибридная = 3
+    FullTime = 1,
+    Distance = 2,
+    Hybrid = 3
 }

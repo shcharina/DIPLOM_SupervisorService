@@ -36,7 +36,7 @@ public class InterviewService : IInterviewService
 
         interview.Result  = dto.Result;
         interview.Comment = dto.Comment;
-        interview.Status  = InterviewStatus.Прошло;
+        interview.Status  = InterviewStatus.IsOver;
 
         var slot = await _repository.FindSlotAsync(id);
         if (slot?.IdSupervisorApplication != null)
@@ -47,13 +47,13 @@ public class InterviewService : IInterviewService
 
             if (link != null)
             {
-                if (link.Status == StudentSupervisorApplicationStatus.Принят)
+                if (link.Status == StudentSupervisorApplicationStatus.Accepted)
                     throw new InvalidOperationException(
                         "Студент уже принят, изменение результата собеседования невозможно");
 
                 link.Status = dto.Result
-                    ? StudentSupervisorApplicationStatus.ОформлениеДокументов
-                    : StudentSupervisorApplicationStatus.Отказано;
+                    ? StudentSupervisorApplicationStatus.DocumentProcessing
+                    : StudentSupervisorApplicationStatus.Rejected;
             }
 
             await _repository.SaveChangesAsync();
@@ -70,8 +70,8 @@ public class InterviewService : IInterviewService
             idInterviewSlot  = id,
             result           = interview.Result,
             newStudentStatus = dto.Result
-                ? StudentSupervisorApplicationStatus.ОформлениеДокументов.ToString()
-                : StudentSupervisorApplicationStatus.Отказано.ToString(),
+                ? StudentSupervisorApplicationStatus.DocumentProcessing.ToString()
+                : StudentSupervisorApplicationStatus.Rejected.ToString(),
             message = dto.Result
                 ? "Собеседование пройдено, студент переведён в оформление документов"
                 : "Собеседование не пройдено, студент отклонён"

@@ -26,7 +26,7 @@ public class InterviewSlot
     [Required]
     public DateTime EndTime { get; set; }
     
-    public InterviewSlotStatus Status { get; set; } = InterviewSlotStatus.Черновик;
+    public InterviewSlotStatus Status { get; set; } = InterviewSlotStatus.Draft;
     
     [MaxLength(255)]
     public string? MeetingPlace { get; set; }

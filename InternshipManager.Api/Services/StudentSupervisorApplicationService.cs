@@ -103,7 +103,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             .GetByIdAsync(dto.IdSupervisorApplication);
 
         if (supervisorApp == null ||
-            supervisorApp.Status != SupervisorApplicationStatus.Отправлена)
+            supervisorApp.Status != SupervisorApplicationStatus.Sent)
             throw new KeyNotFoundException("Активная заявка руководителя не найдена");
 
         // Бизнес-логика: нельзя прикрепить студента дважды
@@ -118,7 +118,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
         {
             IdSupervisorApplication = dto.IdSupervisorApplication,
             IdStudentApplication = dto.IdStudentApplication,
-            Status = StudentSupervisorApplicationStatus.НаРассмотренииРуководителем
+            Status = StudentSupervisorApplicationStatus.UnderReviewBySupervisor
         };
 
         await _repository.AddAsync(link);
@@ -142,11 +142,11 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             throw new KeyNotFoundException("Связка студент-заявка не найдена");
 
         // Бизнес-логика: студент не должен быть отказавшим
-        if (link.Status == StudentSupervisorApplicationStatus.Отказано)
+        if (link.Status == StudentSupervisorApplicationStatus.Rejected)
             throw new InvalidOperationException(
                 "Студент отозвал заявку, дальнейшая работа с ним невозможна");
 
-        if (link.Status != StudentSupervisorApplicationStatus.НаРассмотренииРуководителем)
+        if (link.Status != StudentSupervisorApplicationStatus.UnderReviewBySupervisor)
             throw new InvalidOperationException(
                 $"Нельзя принять студента в статусе {link.Status}");
 
@@ -183,11 +183,11 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
         if (link == null)
             throw new KeyNotFoundException("Связка студент-заявка не найдена");
 
-        if (link.Status == StudentSupervisorApplicationStatus.Отказано)
+        if (link.Status == StudentSupervisorApplicationStatus.Rejected)
             throw new InvalidOperationException(
                 "Студент отозвал заявку, дальнейшая работа с ним невозможна");
 
-        if (link.Status != StudentSupervisorApplicationStatus.НаРассмотренииРуководителем)
+        if (link.Status != StudentSupervisorApplicationStatus.UnderReviewBySupervisor)
             throw new InvalidOperationException(
                 $"Нельзя пригласить студента в статусе {link.Status}");
 
@@ -213,7 +213,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
         if (link == null)
             throw new KeyNotFoundException("Связка студент-заявка не найдена");
 
-        link.Status = StudentSupervisorApplicationStatus.Отказано;
+        link.Status = StudentSupervisorApplicationStatus.Rejected;
         await _repository.UpdateAsync(link);
 
         return new

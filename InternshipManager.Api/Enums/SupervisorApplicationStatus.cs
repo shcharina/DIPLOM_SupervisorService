@@ -2,10 +2,10 @@ namespace InternshipManager.Api.Enums;
 
 public enum SupervisorApplicationStatus
 {
-    Отменена = 0,
-    Шаблон = 1,
-    Отправлена = 2,
-    Удовлетворена = 3,
-    Неудовлетворена = 4,
-    Закрыта = 5
+    Cancelled = 0,
+    Draft = 1,
+    Sent = 2,
+    Satisfied = 3,
+    Unsatisfied = 4,
+    ClosedEarly = 5
 }

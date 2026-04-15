@@ -34,7 +34,7 @@ public class SupervisorReviewController : ControllerBase
                 a.IdEmployee == supervisorId &&
                 a.EndDate != null &&
                 a.EndDate <= DateTime.UtcNow &&
-                a.Status == SupervisorApplicationStatus.Удовлетворена)
+                a.Status == SupervisorApplicationStatus.Satisfied)
 
             .Select(a => a.IdSupervisorApplication)
             .ToListAsync();
