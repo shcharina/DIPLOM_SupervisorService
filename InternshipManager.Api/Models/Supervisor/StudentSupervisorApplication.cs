@@ -13,7 +13,7 @@ public class StudentSupervisorApplication
     
     public StudentApplicationId IdStudentApplication { get; set; }  // ID заявки студента (из другой системы)
     
-    public StudentSupervisorApplicationStatus Status { get; set; } = StudentSupervisorApplicationStatus.UnderReviewBySupervisor;
+    public StudentSupervisorApplicationStatus Status { get; set; } = StudentSupervisorApplicationStatus.UnderReviewbySupervisor;
 
     // Навигационные свойства
     [ForeignKey(nameof(IdSupervisorApplication))]
