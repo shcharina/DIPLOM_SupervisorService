@@ -52,7 +52,7 @@ public class StudentSupervisorApplicationController : ControllerBase
             return NotFound(new { detail = ex.Message });
         }
     }
-    public async Task<IActionResult> AssignStudent( AssignStudentDto dto)
+    public async Task<IActionResult> AssignStudent([FromBody] AssignStudentDto dto)
     {
         try
         {
