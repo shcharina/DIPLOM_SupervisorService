@@ -83,6 +83,13 @@ public class SupervisorApplicationController : ControllerBase
         });
     }
     
+    [HttpGet("active-practices/{supervisorId:int}")]
+    public async Task<IActionResult> GetActivePractices(EmployeeId supervisorId)
+    {
+        var practices = await _service.GetActivePracticesAsync(supervisorId);
+        return Ok(practices);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateSupervisorApplicationDto dto)
