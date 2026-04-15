@@ -30,8 +30,8 @@ public class SupervisorApplicationStatusService
         var acceptedCount = await _context.StudentSupervisorApplications
             .CountAsync(s =>
                 s.IdSupervisorApplication == supervisorApplicationId &&
-                (s.Status == StudentSupervisorApplicationStatus.ОформлениеДокументов ||
-                 s.Status == StudentSupervisorApplicationStatus.Принят));
+                (s.Status == StudentSupervisorApplicationStatus.DocumentProcessing ||
+                 s.Status == StudentSupervisorApplicationStatus.Accepted));
 
         // Если набрали нужное количество → Удовлетворена
         if (acceptedCount >= application.RequestedStudentsCount)
