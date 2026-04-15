@@ -118,7 +118,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
         {
             IdSupervisorApplication = dto.IdSupervisorApplication,
             IdStudentApplication = dto.IdStudentApplication,
-            Status = StudentSupervisorApplicationStatus.UnderReviewBySupervisor
+            Status = StudentSupervisorApplicationStatus.UnderReviewbySupervisor
         };
 
         await _repository.AddAsync(link);
@@ -146,7 +146,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             throw new InvalidOperationException(
                 "Студент отозвал заявку, дальнейшая работа с ним невозможна");
 
-        if (link.Status != StudentSupervisorApplicationStatus.UnderReviewBySupervisor)
+        if (link.Status != StudentSupervisorApplicationStatus.UnderReviewbySupervisor)
             throw new InvalidOperationException(
                 $"Нельзя принять студента в статусе {link.Status}");
 
@@ -159,7 +159,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             throw new InvalidOperationException(
                 "Заявка уже набрала необходимое количество студентов");
 
-        link.Status = StudentSupervisorApplicationStatus.ОформлениеДокументов;
+        link.Status = StudentSupervisorApplicationStatus.DocumentProcessing;
         await _repository.UpdateAsync(link);
 
         await _statusService.CheckAndUpdateApplicationStatus(supervisorApplicationId);
@@ -187,11 +187,11 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             throw new InvalidOperationException(
                 "Студент отозвал заявку, дальнейшая работа с ним невозможна");
 
-        if (link.Status != StudentSupervisorApplicationStatus.UnderReviewBySupervisor)
+        if (link.Status != StudentSupervisorApplicationStatus.UnderReviewbySupervisor)
             throw new InvalidOperationException(
                 $"Нельзя пригласить студента в статусе {link.Status}");
 
-        link.Status = StudentSupervisorApplicationStatus.Собеседование;
+        link.Status = StudentSupervisorApplicationStatus.Interview;
         await _repository.UpdateAsync(link);
 
         return new

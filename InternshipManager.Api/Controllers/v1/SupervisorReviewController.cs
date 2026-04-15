@@ -43,7 +43,7 @@ public class SupervisorReviewController : ControllerBase
         var completedStudents = await _context.StudentSupervisorApplications
             .Where(s =>
                 completedApplicationIds.Contains(s.IdSupervisorApplication) &&
-                s.Status == StudentSupervisorApplicationStatus.Принят)
+                s.Status == StudentSupervisorApplicationStatus.Accepted)
             .ToListAsync();
 
         // Убираем тех на кого отзыв уже есть
@@ -83,7 +83,7 @@ public class SupervisorReviewController : ControllerBase
         var studentCompleted = await _context.StudentSupervisorApplications
             .AnyAsync(s =>
                 s.IdStudentApplication == dto.IdStudentApplication &&
-                s.Status == StudentSupervisorApplicationStatus.Принят);
+                s.Status == StudentSupervisorApplicationStatus.Accepted);
 
         if (!studentCompleted)
             return BadRequest(new

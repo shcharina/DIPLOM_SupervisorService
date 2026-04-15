@@ -38,5 +38,4 @@ public class SupervisorApplicationResponseDto
     public bool IsCreatedByManager { get; set; }
 
     public bool IsFromSchedule { get; set; }
-
 }

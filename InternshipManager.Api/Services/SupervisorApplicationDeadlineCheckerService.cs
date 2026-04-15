@@ -58,8 +58,8 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
             var acceptedCount = await context.StudentSupervisorApplications
                 .CountAsync(s =>
                     s.IdSupervisorApplication == application.IdSupervisorApplication &&
-                    (s.Status == StudentSupervisorApplicationStatus.ОформлениеДокументов ||
-                     s.Status == StudentSupervisorApplicationStatus.Принят));
+                    (s.Status == StudentSupervisorApplicationStatus.DocumentProcessing ||
+                     s.Status == StudentSupervisorApplicationStatus.Accepted));
 
             if (acceptedCount >= application.RequestedStudentsCount)
             {
@@ -109,7 +109,7 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
             var completedStudents = await context.StudentSupervisorApplications
                 .Where(s =>
                     s.IdSupervisorApplication == application.IdSupervisorApplication &&
-                    s.Status == StudentSupervisorApplicationStatus.Принят)
+                    s.Status == StudentSupervisorApplicationStatus.Accepted)
                 .ToArrayAsync();
             
             foreach (var student in completedStudents)

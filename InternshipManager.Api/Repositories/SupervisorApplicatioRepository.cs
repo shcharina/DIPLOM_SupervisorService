@@ -77,8 +77,8 @@ public class SupervisorApplicationRepository : ISupervisorApplicationRepository
             .AsNoTracking()
             .Where(s =>
                 applicationIds.Contains(s.IdSupervisorApplication) &&
-                (s.Status == StudentSupervisorApplicationStatus.Принят ||
-                 s.Status == StudentSupervisorApplicationStatus.ОформлениеДокументов))
+                (s.Status == StudentSupervisorApplicationStatus.Accepted ||
+                 s.Status == StudentSupervisorApplicationStatus.DocumentProcessing))
             .Select(s => s.IdSupervisorApplication)
             .Distinct()
             .ToListAsync();
