@@ -36,10 +36,13 @@ public class InterviewSlotController : ControllerBase
     [HttpGet("available/{supervisorId:int}")]
     public async Task<IActionResult> GetAvailable(
         EmployeeId supervisorId,
-        [FromQuery] StudentApplicationId studentApplicationId)
+        [FromQuery] StudentApplicationId? studentApplicationId = null)
     {
+        if (!studentApplicationId.HasValue || studentApplicationId <= 0)
+            return BadRequest(new { detail = "studentApplicationId обязателен" });
+
         var slots = await _service.GetAvailableForStudentAsync(
-            supervisorId, studentApplicationId);
+            supervisorId, studentApplicationId.Value);
         return Ok(slots);
     }
 
