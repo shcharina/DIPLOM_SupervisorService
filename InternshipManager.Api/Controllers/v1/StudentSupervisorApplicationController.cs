@@ -52,6 +52,8 @@ public class StudentSupervisorApplicationController : ControllerBase
             return NotFound(new { detail = ex.Message });
         }
     }
+
+    [HttpPost("assign")]
     public async Task<IActionResult> AssignStudent([FromBody] AssignStudentDto dto)
     {
         try
