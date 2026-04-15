@@ -20,6 +20,9 @@ builder.Services.AddScoped<IInterviewSlotRepository,
     InterviewSlotRepository>();
 builder.Services.AddScoped<IStudentSupervisorApplicationRepository,
     StudentSupervisorApplicationRepository>();
+builder.Services.AddScoped<IInterviewRepository,
+    InterviewRepository>();
+
 
 // Сервисы
 builder.Services.AddScoped<ISupervisorApplicationService,
@@ -28,6 +31,8 @@ builder.Services.AddScoped<IInterviewSlotService,
     InterviewSlotService>();
 builder.Services.AddScoped<IStudentSupervisorApplicationService,
     StudentSupervisorApplicationService>();
+builder.Services.AddScoped<IInterviewService,
+    InterviewService>();
 
 // Вспомогательный сервис проверки статуса
 builder.Services.AddScoped<SupervisorApplicationStatusService>();
