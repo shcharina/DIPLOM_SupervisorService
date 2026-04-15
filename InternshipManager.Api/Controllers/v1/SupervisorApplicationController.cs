@@ -57,6 +57,32 @@ public class SupervisorApplicationController : ControllerBase
         return Ok(application);
     }
 
+    [HttpGet("active")]
+    public async Task<IActionResult> GetActive(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        if (page < 1 || pageSize < 1 || pageSize > 100)
+            return BadRequest(new { detail = "Некорректные параметры пагинации" });
+
+        var (data, totalItems) = await _service
+            .GetActiveAsync(page, pageSize);
+
+        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+        return Ok(new
+        {
+            data,
+            pagination = new
+            {
+                currentPage = page,
+                pageSize,
+                totalPages,
+                totalItems
+            }
+        });
+    }
+    
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateSupervisorApplicationDto dto)

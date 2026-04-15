@@ -31,14 +31,7 @@ public class ManagerApiClient
         catch (Exception ex)
         {
             _logger.LogError("Сервис менеджера недоступен: {error}", ex.Message);
-            
-            return new EmployeeExternalDto
-            {
-                IdEmployee = id,
-                FirstName = "Заглушка",
-                LastName = "Руководитель",
-                Role = 1
-            };
+            return null;
         }
     }
 
