@@ -57,9 +57,29 @@ public class SupervisorApplicationRepository : ISupervisorApplicationRepository
             .ToListAsync();
     }
 
+    public async Task<List<SupervisorApplication>> GetExpiredSentApplicationsAsync()
+    {
+        return await _context.SupervisorApplications
+            .Where(a =>
+                a.Status == SupervisorApplicationStatus.Sent &&
+                a.StartDate != null &&
+                a.StartDate <= DateTime.UtcNow)
+            .ToListAsync();
+    }
+    
+    public async Task<List<SupervisorApplication>> GetCompletedSatisfiedApplicationsAsync()
+    {
+        return await _context.SupervisorApplications
+            .AsNoTracking()
+            .Where(a =>
+                a.EndDate != null &&
+                a.EndDate <= DateTime.UtcNow &&
+                a.Status == SupervisorApplicationStatus.Satisfied)
+            .ToListAsync();
+    }
+    
 
-    public async Task<(List<SupervisorApplication> Data, int TotalItems)> 
-        GetActiveAsync(int page, int pageSize)
+    public async Task<(List<SupervisorApplication> Data, int TotalItems)> GetActiveAsync(int page, int pageSize)
     {
         var query = _context.SupervisorApplications
             .AsNoTracking()

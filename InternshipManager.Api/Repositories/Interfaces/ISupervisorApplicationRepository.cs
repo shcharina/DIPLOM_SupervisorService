@@ -14,6 +14,8 @@ public interface ISupervisorApplicationRepository
     Task<List<SupervisorApplication>> GetActivePracticesAsync(EmployeeId supervisorId);
     Task<List<SupervisorApplicationId>> GetCompletedApplicationIdsAsync(
         EmployeeId supervisorId);
+    Task<List<SupervisorApplication>> GetExpiredSentApplicationsAsync();
+    Task<List<SupervisorApplication>> GetCompletedSatisfiedApplicationsAsync();
     Task<SupervisorApplication> AddAsync(SupervisorApplication application);
     Task UpdateAsync(SupervisorApplication application);
     Task DeleteAsync(SupervisorApplication application);

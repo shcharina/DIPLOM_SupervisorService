@@ -1,15 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-
-using InternshipManager.Api.Data;
 using InternshipManager.Api.Enums;
+using InternshipManager.Api.Repositories.Interfaces;
 
 namespace InternshipManager.Api.Services;
 
 public class SupervisorApplicationDeadlineCheckerService : BackgroundService
 {
-    // Нужен IServiceScopeFactory потому что DbContext не thread-safe
     private readonly IServiceScopeFactory _scopeFactory;
-
     private readonly ILogger<SupervisorApplicationDeadlineCheckerService> _logger;
 
     public SupervisorApplicationDeadlineCheckerService(
@@ -23,110 +19,100 @@ public class SupervisorApplicationDeadlineCheckerService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Фоновая задача проверки дат запущена");
-        // Проверяем каждые 24 часа
+
         while (!stoppingToken.IsCancellationRequested)
         {
             await CheckExpiredApplications();
-
-            // Ждём до следующей проверки
             await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
         }
-
     }
 
     private async Task CheckExpiredApplications()
     {
         using var scope = _scopeFactory.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        
-        _logger.LogInformation("Проверка заявок, у которых наступила дата начала практики: {time}", DateTime.UtcNow);
 
-        // Находим все отправленные заявки у которых дата начала уже наступила
-        var startedApplications = await context.SupervisorApplications
-            .Where(a =>
-                a.Status == SupervisorApplicationStatus.Sent &&
-                a.StartDate != null &&
-                a.StartDate <= DateTime.UtcNow)
-            .ToListAsync();
+        var applicationRepo = scope.ServiceProvider
+            .GetRequiredService<ISupervisorApplicationRepository>();
+        var studentRepo = scope.ServiceProvider
+            .GetRequiredService<IStudentSupervisorApplicationRepository>();
+        var reviewRepo = scope.ServiceProvider
+            .GetRequiredService<ISupervisorReviewRepository>();
 
         _logger.LogInformation(
-            "Найдено заявок, у которых наступила дата начала практики: {count}", startedApplications.Count);
+            "Проверка заявок, у которых наступила дата начала практики: {time}",
+            DateTime.UtcNow);
+
+        // === Заявки, где практика уже началась, но статус ещё Sent ===
+        var startedApplications = await applicationRepo
+            .GetExpiredSentApplicationsAsync();
+
+        _logger.LogInformation(
+            "Найдено заявок, у которых наступила дата начала практики: {count}",
+            startedApplications.Count);
 
         foreach (var application in startedApplications)
         {
-            // Считаем принятых студентов
-            var acceptedCount = await context.StudentSupervisorApplications
-                .CountAsync(s =>
-                    s.IdSupervisorApplication == application.IdSupervisorApplication &&
-                    (s.Status == StudentSupervisorApplicationStatus.DocumentProcessing ||
-                     s.Status == StudentSupervisorApplicationStatus.Accepted));
+            var acceptedCount = await studentRepo
+                .CountAcceptedAsync(application.IdSupervisorApplication);
 
             if (acceptedCount >= application.RequestedStudentsCount)
             {
-                // Набрали нужное количество → Удовлетворена
                 application.Status = SupervisorApplicationStatus.Satisfied;
-
                 _logger.LogInformation(
-                    "Заявка {id} → Удовлетворена ({count}/{required} студентов)",
+                    "Заявка {id} -> Удовлетворена ({count}/{required} студентов)",
                     application.IdSupervisorApplication,
                     acceptedCount,
                     application.RequestedStudentsCount);
             }
             else
             {
-                // Дата наступила, но студентов не хватает → Неудовлетворена
                 application.Status = SupervisorApplicationStatus.Unsatisfied;
-
                 _logger.LogInformation(
-                    "Заявка {id} → Неудовлетворена ({count}/{required} студентов)",
+                    "Заявка {id} -> Неудовлетворена ({count}/{required} студентов)",
                     application.IdSupervisorApplication,
                     acceptedCount,
                     application.RequestedStudentsCount);
             }
+
+            await applicationRepo.UpdateAsync(application);
         }
 
-        await context.SaveChangesAsync();
-
-        // Проверка на окончание практики - необходимость отзыва
-        await CheckPendingReviews(context);
+        // === Проверка незаполненных отзывов ===
+        await CheckPendingReviews(applicationRepo, studentRepo, reviewRepo);
     }
 
-    private async Task CheckPendingReviews(AppDbContext context)
+    private async Task CheckPendingReviews(
+        ISupervisorApplicationRepository applicationRepo,
+        IStudentSupervisorApplicationRepository studentRepo,
+        ISupervisorReviewRepository reviewRepo)
     {
         _logger.LogInformation(
-            "Проверка необходимости отзывов: {time}",
+            "Проверка незаполненных отзывов: {time}",
             DateTime.UtcNow);
-        
-        var completedApplications = await context.SupervisorApplications
-            .Where(a =>
-            a.EndDate != null &&
-            a.EndDate <= DateTime.UtcNow &&
-            a.Status == SupervisorApplicationStatus.Satisfied)
-            .ToListAsync();
+
+        var completedApplications = await applicationRepo
+            .GetCompletedSatisfiedApplicationsAsync();
 
         foreach (var application in completedApplications)
         {
-            var completedStudents = await context.StudentSupervisorApplications
-                .Where(s =>
-                    s.IdSupervisorApplication == application.IdSupervisorApplication &&
-                    s.Status == StudentSupervisorApplicationStatus.Accepted)
-                .ToArrayAsync();
-            
+            // Студенты со статусом Accepted по данной заявке
+            var completedStudents = await studentRepo
+                .GetByApplicationAsync(
+                    application.IdSupervisorApplication,
+                    StudentSupervisorApplicationStatus.Accepted);
+
             foreach (var student in completedStudents)
             {
-                var reviewExists = await context.SupervisorReviews
-                    .AnyAsync(r =>
-                    r.IdEmployee == application.IdEmployee &&
-                    r.IdStudentApplication == student.IdStudentApplication);
-                
+                var reviewExists = await reviewRepo.ExistsAsync(
+                    application.IdEmployee,
+                    student.IdStudentApplication);
+
                 if (!reviewExists)
                 {
                     _logger.LogInformation(
                         "Руководитель {supervisor} должен оставить отзыв о студенте {student}",
                         application.IdEmployee,
                         student.IdStudentApplication);
-
-                    // тут потом добавить какую-нибудь функцию типа уведомление руководителю    
                 }
             }
         }
