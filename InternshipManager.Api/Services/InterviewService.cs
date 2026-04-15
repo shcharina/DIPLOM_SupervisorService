@@ -28,7 +28,8 @@ public class InterviewService : IInterviewService
         return await _repository.GetByIdAsync(id);
     }
 
-    public async Task<object> RecordResultAsync(InterviewSlotId id, RecordInterviewResultDto dto)
+    public async Task<object> RecordResultAsync(
+        InterviewSlotId id, RecordInterviewResultDto dto)
     {
         var interview = await _repository.FindAsync(id);
         if (interview == null)
@@ -39,6 +40,7 @@ public class InterviewService : IInterviewService
         interview.Status  = InterviewStatus.IsOver;
 
         var slot = await _repository.FindSlotAsync(id);
+
         if (slot?.IdSupervisorApplication != null)
         {
             var link = await _repository.FindLinkAsync(
@@ -49,21 +51,23 @@ public class InterviewService : IInterviewService
             {
                 if (link.Status == StudentSupervisorApplicationStatus.Accepted)
                     throw new InvalidOperationException(
-                        "Студент уже принят, изменение результата собеседования невозможно");
+                        "Студент уже принят, повторное редактирование невозможно");
 
                 link.Status = dto.Result
                     ? StudentSupervisorApplicationStatus.DocumentProcessing
                     : StudentSupervisorApplicationStatus.Rejected;
             }
-
-            await _repository.SaveChangesAsync();
-
-            if (dto.Result)
-                await _statusService.CheckAndUpdateApplicationStatus(
-                    slot.IdSupervisorApplication.Value);
         }
 
+        // === Один save — сохраняет и interview, и link ===
         await _repository.SaveChangesAsync();
+
+        // === Проверка статуса ПОСЛЕ сохранения — видит актуальные данные ===
+        if (slot?.IdSupervisorApplication != null && dto.Result)
+        {
+            await _statusService.CheckAndUpdateApplicationStatus(
+                slot.IdSupervisorApplication.Value);
+        }
 
         return new
         {
