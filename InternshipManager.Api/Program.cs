@@ -16,10 +16,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Репозитории
 builder.Services.AddScoped<ISupervisorApplicationRepository,
     SupervisorApplicationRepository>();
+builder.Services.AddScoped<IInterviewSlotRepository,
+    InterviewSlotRepository>();
 
 // Сервисы
 builder.Services.AddScoped<ISupervisorApplicationService,
     SupervisorApplicationService>();
+builder.Services.AddScoped<IInterviewSlotService,
+    InterviewSlotService>();
 
 // Вспомогательный сервис проверки статуса
 builder.Services.AddScoped<SupervisorApplicationStatusService>();
