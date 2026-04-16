@@ -9,12 +9,18 @@ namespace InternshipManager.Api.Services;
 public class SupervisorApplicationService : ISupervisorApplicationService
 {
     private readonly ISupervisorApplicationRepository _repository;
+    private readonly IInterviewSlotRepository _slotRepository;
+    private readonly IStudentSupervisorApplicationRepository _studentRepository;
     private readonly ManagerApiClient _managerApi;
     public SupervisorApplicationService(
         ISupervisorApplicationRepository repository,
+        IInterviewSlotRepository slotRepository,
+        IStudentSupervisorApplicationRepository studentRepository,
         ManagerApiClient managerApi)
     {
         _repository = repository;
+        _slotRepository = slotRepository;
+        _studentRepository = studentRepository;
         _managerApi = managerApi;
     }
 
@@ -211,12 +217,74 @@ public class SupervisorApplicationService : ISupervisorApplicationService
 
     public async Task<object> CancelAsync(SupervisorApplicationId id)
     {
-        /*  Нужен ещё репозиторий студентов и слотов
-            Пока заглушка — реализовать когда 
-            будут IStudentSupervisorApplicationRepository
-            и IInterviewSlotRepository
-        */
-        throw new NotImplementedException();
+        var application = await _repository.GetByIdAsync(id);
+            if (application == null)
+                throw new KeyNotFoundException("Заявка не найдена");
+
+            if (application.Status != SupervisorApplicationStatus.Draft &&
+                application.Status != SupervisorApplicationStatus.Sent)
+                throw new InvalidOperationException(
+                    $"Нельзя отменить заявку в статусе {application.Status}");
+
+            // === 1. Откреплить студентов ===
+            var studentsToDetach = await _studentRepository
+                .GetActiveByApplicationTrackedAsync(id);
+
+            foreach (var student in studentsToDetach)
+            {
+                student.Status = StudentSupervisorApplicationStatus.Rejected;
+            }
+
+            // === 2. Отменить слоты и удалить незавершённые собеседования ===
+            var allSlots = await _slotRepository
+                .GetActiveByApplicationWithInterviewsAsync(id);
+
+            int cancelledSlots = 0;
+            int skippedSlots = 0;
+
+            foreach (var slot in allSlots)
+            {
+                if (slot.Status == InterviewSlotStatus.Booked && slot.Interview != null)
+                {
+                    // Проведённые собеседования не трогаем
+                    if (slot.Interview.Status == InterviewStatus.IsOver)
+                    {
+                        skippedSlots++;
+                        continue;
+                    }
+
+                    // Незавершённые — удаляем
+                    _slotRepository.RemoveInterview(slot.Interview);
+                }
+
+                slot.Status = InterviewSlotStatus.Cancelled;
+                cancelledSlots++;
+            }
+
+            // === 3. Отменить саму заявку ===
+            var previousStatus = application.Status;
+            application.Status = SupervisorApplicationStatus.Cancelled;
+
+            // === Один save — сохраняет ВСЁ ===
+            // UpdateAsync вызывает _context.Update() + SaveChangesAsync()
+            // Все репозитории используют один scoped AppDbContext,
+            // поэтому изменения студентов, слотов и удаления собеседований
+            // тоже сохранятся
+            await _repository.UpdateAsync(application);
+
+            return new
+            {
+                idSupervisorApplication = application.IdSupervisorApplication,
+                status = application.Status,
+                previousStatus,
+                detachedStudents = studentsToDetach.Count,
+                cancelledSlots,
+                skippedSlots,
+                message = $"Заявка отменена. " +
+                          $"Откреплено студентов: {studentsToDetach.Count}. " +
+                          $"Отменено слотов: {cancelledSlots}. " +
+                          $"Сохранено проведённых собеседований: {skippedSlots}"
+            };
     }
 
     // === Маппинг ===

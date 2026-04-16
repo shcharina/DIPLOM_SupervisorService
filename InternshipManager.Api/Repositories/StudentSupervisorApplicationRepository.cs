@@ -25,10 +25,9 @@ public class StudentSupervisorApplicationRepository
     //     .Where(s => s.IdStudentApplication == studentApplicationId
     //              && s.Status == Собеседование)
     //     .Select(s => s.IdSupervisorApplication)
-    public async Task<List<SupervisorApplicationId>>
-        GetApplicationIdsByStudentAndStatusAsync(
-            StudentApplicationId studentApplicationId,
-            StudentSupervisorApplicationStatus status)
+    public async Task<List<SupervisorApplicationId>> GetApplicationIdsByStudentAndStatusAsync(
+        StudentApplicationId studentApplicationId,
+        StudentSupervisorApplicationStatus status)
     {
         return await _context.StudentSupervisorApplications
             .AsNoTracking()
@@ -45,8 +44,7 @@ public class StudentSupervisorApplicationRepository
     //     .Where(s => s.IdSupervisorApplication == supervisorApplicationId
     //              && s.Status == Собеседование)
     //     .Select(s => s.IdStudentApplication)
-    public async Task<List<StudentApplicationId>>
-        GetStudentIdsByApplicationAndStatusAsync(
+    public async Task<List<StudentApplicationId>> GetStudentIdsByApplicationAndStatusAsync(
             SupervisorApplicationId supervisorApplicationId,
             StudentSupervisorApplicationStatus status)
     {
@@ -66,10 +64,9 @@ public class StudentSupervisorApplicationRepository
     //              && s.Status == Собеседование)
     //     .Select(s => s.IdStudentApplication)
     //     .Distinct()
-    public async Task<List<StudentApplicationId>>
-        GetDistinctStudentIdsByApplicationsAndStatusAsync(
-            List<SupervisorApplicationId> supervisorApplicationIds,
-            StudentSupervisorApplicationStatus status)
+    public async Task<List<StudentApplicationId>> GetDistinctStudentIdsByApplicationsAndStatusAsync(
+        List<SupervisorApplicationId> supervisorApplicationIds,
+        StudentSupervisorApplicationStatus status)
     {
         return await _context.StudentSupervisorApplications
             .AsNoTracking()
@@ -116,6 +113,18 @@ public class StudentSupervisorApplicationRepository
 
         return await query.ToListAsync();
     }
+
+    public async Task<List<StudentSupervisorApplication>> GetActiveByApplicationTrackedAsync(
+        SupervisorApplicationId supervisorApplicationId)
+    {
+        // БЕЗ AsNoTracking — сущности будут изменяться
+        return await _context.StudentSupervisorApplications
+            .Where(s =>
+                s.IdSupervisorApplication == supervisorApplicationId &&
+                s.Status != StudentSupervisorApplicationStatus.Rejected)
+            .ToListAsync();
+    }
+
 
     // Для GetByStudent: все заявки конкретного студента
     public async Task<List<StudentSupervisorApplication>> GetByStudentAsync(
@@ -202,5 +211,4 @@ public class StudentSupervisorApplicationRepository
                 s.IdStudentApplication == studentApplicationId &&
                 s.Status == status);
     }
-
 }

@@ -136,6 +136,24 @@ public class SupervisorApplicationController : ControllerBase
         }
     }
 
+    [HttpPut("{id:int}/cancel")]
+    public async Task<IActionResult> Cancel(SupervisorApplicationId id)
+    {
+        try
+        {
+            var result = await _service.CancelAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { type = "business_error", detail = ex.Message });
+        }
+    }
+    
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(SupervisorApplicationId id)
     {

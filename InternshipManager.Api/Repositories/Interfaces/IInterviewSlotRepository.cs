@@ -18,4 +18,8 @@ public interface IInterviewSlotRepository
     Task AddInterviewAsync(Interview interview);
     Task AddRangeAsync(List<InterviewSlot> slots);
     Task AddIntervalAsync(TimeInterval interval);
+    Task<List<InterviewSlot>> GetActiveByApplicationWithInterviewsAsync(
+        SupervisorApplicationId supervisorApplicationId);
+    void RemoveInterview(Interview interview);
+    Task SaveChangesAsync();
 }

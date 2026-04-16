@@ -35,6 +35,9 @@ public interface IStudentSupervisorApplicationRepository
         SupervisorApplicationId supervisorApplicationId,
         StudentSupervisorApplicationStatus? status);
 
+    Task<List<StudentSupervisorApplication>> GetActiveByApplicationTrackedAsync(
+        SupervisorApplicationId supervisorApplicationId);
+
     Task<List<StudentSupervisorApplication>> GetByStudentAsync(
         StudentApplicationId studentApplicationId);
 

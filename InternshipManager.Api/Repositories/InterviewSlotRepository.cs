@@ -96,4 +96,26 @@ public class InterviewSlotRepository : IInterviewSlotRepository
         _context.TimeIntervals.Add(interval);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<List<InterviewSlot>> GetActiveByApplicationWithInterviewsAsync(
+        SupervisorApplicationId supervisorApplicationId)
+    {
+        // БЕЗ AsNoTracking — сущности будут изменяться
+        return await _context.InterviewSlots
+            .Where(s =>
+                s.IdSupervisorApplication == supervisorApplicationId &&
+                s.Status != InterviewSlotStatus.Cancelled)
+            .Include(s => s.Interview)
+            .ToListAsync();
+    }
+
+    public void RemoveInterview(Interview interview)
+    {
+        _context.Interviews.Remove(interview);
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
 }
