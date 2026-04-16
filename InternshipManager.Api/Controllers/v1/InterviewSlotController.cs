@@ -46,7 +46,7 @@ public class InterviewSlotController : ControllerBase
         return Ok(slots);
     }
 
-    [HttpPut("{id}/confirm")]
+    [HttpPut("{id:int}/confirm")]
     public async Task<IActionResult> Confirm(InterviewSlotId id)
     {
         try
@@ -64,8 +64,8 @@ public class InterviewSlotController : ControllerBase
         }
     }
 
-    [HttpPut("{id}/reject")]
-    public async Task<IActionResult> Reject(InterviewSlotId id, RejectSlotDto dto)
+    [HttpPut("{id:int}/reject")]
+    public async Task<IActionResult> Reject(InterviewSlotId id, [FromBody] RejectSlotDto dto)
     {
         try
         {
@@ -82,7 +82,7 @@ public class InterviewSlotController : ControllerBase
         }
     }
 
-    [HttpPut("{id}/publish")]
+    [HttpPut("{id:int}/publish")]
     public async Task<IActionResult> Publish(
         InterviewSlotId id,
         [FromQuery] SupervisorApplicationId? supervisorApplicationId = null)
@@ -103,7 +103,7 @@ public class InterviewSlotController : ControllerBase
     }
 
     [HttpPut("{id:int}/book")]
-    public async Task<IActionResult> Book(InterviewSlotId id, BookSlotDto dto)
+    public async Task<IActionResult> Book(InterviewSlotId id, [FromBody] BookSlotDto dto)
     {
         try
         {
@@ -121,7 +121,7 @@ public class InterviewSlotController : ControllerBase
     }
 
     [HttpPost("interval")]
-    public async Task<IActionResult> CreateInterval( CreateTimeIntervalDto dto)
+    public async Task<IActionResult> CreateInterval([FromBody] CreateTimeIntervalDto dto)
     {
         try
         {

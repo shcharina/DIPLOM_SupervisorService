@@ -71,6 +71,9 @@ public class SupervisorApplicationService : ISupervisorApplicationService
             if (scheduled == null)
                 throw new InvalidOperationException(
                     "Практика из расписания не найдена");
+            if (scheduled.Specialization == null || scheduled.IdSpecialization <= 0)
+                throw new InvalidOperationException(
+                    "У практики из расписания не указана специализация");
 
             idSpecialization = scheduled.IdSpecialization;
             startDate = scheduled.StartDate;

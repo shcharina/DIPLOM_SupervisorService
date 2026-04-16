@@ -52,7 +52,7 @@ public class ManagerApiClient
 
         catch (Exception ex)
         {
-            _logger.LogError("Сервис менеджера недоступен: {error}", ex.Message);
+            _logger.LogError("Ошибка получения практики из расписания: {error}", ex.Message);
             return null;
         }
     }
@@ -71,7 +71,7 @@ public class ManagerApiClient
 
         catch (Exception ex)
         {
-            _logger.LogError("Сервис менеджера недоступен: {error}", ex.Message);
+            _logger.LogError("Ошибка получения специализаций: {error}", ex.Message);
             return new List<SpecializationExternalDto>();
         }
     }
@@ -91,7 +91,7 @@ public class ManagerApiClient
 
         catch (Exception ex)
         {
-            _logger.LogError("Сервис менеджера недоступен: {error}", ex.Message);
+            _logger.LogError("Ошибка получения подразделений: {error}", ex.Message);
             return new List<DepartmentExternalDto>();
         }
 
@@ -117,7 +117,7 @@ public class ManagerApiClient
 
         catch (Exception ex)
         {
-            _logger.LogError("Сервис менеджера недоступен: {error}", ex.Message);
+            _logger.LogError("Ошибка получения адресов: {error}", ex.Message);
             return new List<AddressExternalDto>();
         }
     }
@@ -137,7 +137,7 @@ public class ManagerApiClient
 
         catch (Exception ex)
         {
-            _logger.LogError("Сервис менеджера недоступен: {error}", ex.Message);
+            _logger.LogError("Ошибка получения расписания практик: {error}", ex.Message);
             return new List<ScheduledPracticeExternalDto>();
         }
     }
@@ -159,7 +159,7 @@ public class ManagerApiClient
         catch (Exception ex)
         {
             _logger.LogError(
-                "Сервис менеджера недоступен: {error}", ex.Message);
+                "Ошибка получения результатов тестирования: {error}", ex.Message);
 
             return null;
         }
@@ -182,7 +182,7 @@ public class ManagerApiClient
         catch (Exception ex)
         {
             _logger.LogError(
-                "Сервис менеджера недоступен: {error}", ex.Message);
+                "Ошибка получения результатов собеседования менеджером: {error}", ex.Message);
 
             return null;
         }

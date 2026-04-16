@@ -17,7 +17,7 @@ public class InterviewController : ControllerBase
         _service = service;
     }
 
-    [HttpGet("supervisor/{supervisorId}")]
+    [HttpGet("supervisor/{supervisorId:int}")]
     public async Task<IActionResult> GetBySupervisor(EmployeeId supervisorId)
     {
         var result = await _service.GetBySupervisorAsync(supervisorId);
@@ -35,7 +35,8 @@ public class InterviewController : ControllerBase
 
     [HttpPut("{id:int}/result")]
     public async Task<IActionResult> RecordResult(
-        InterviewSlotId id, RecordInterviewResultDto dto)
+        InterviewSlotId id,
+        [FromBody] RecordInterviewResultDto dto)
     {
         try
         {

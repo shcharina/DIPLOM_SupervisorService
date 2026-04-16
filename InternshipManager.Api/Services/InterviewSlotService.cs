@@ -4,6 +4,7 @@ using InternshipManager.Api.Enums;
 using InternshipManager.Api.Models.Supervisor;
 using InternshipManager.Api.Repositories.Interfaces;
 using InternshipManager.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace InternshipManager.Api.Services;
 
@@ -163,7 +164,7 @@ public class InterviewSlotService : IInterviewSlotService
         };
     }
 
-    public async Task<object> BookAsync(InterviewSlotId id, BookSlotDto dto)
+    public async Task<object> BookAsync(InterviewSlotId id, [FromBody] BookSlotDto dto)
     {
         var slot = await _repository.GetByIdWithInterviewAsync(id);
         if (slot == null)
