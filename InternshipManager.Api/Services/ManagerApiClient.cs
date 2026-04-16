@@ -104,7 +104,7 @@ public class ManagerApiClient
         {
             var url = departmentId.HasValue
                 ? $"/api/v1/Address/GetAddressesByDepartment/{departmentId}"
-                : "/api/v1/Address/GetAddressesByDepartmen";
+                : "/api/v1/Address/GetAddressesByDepartment";
 
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
