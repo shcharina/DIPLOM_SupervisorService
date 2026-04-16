@@ -52,7 +52,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             idSupervisorApplication = s.IdSupervisorApplication,
             idStudentApplication = s.IdStudentApplication,
             status = s.Status,
-            statusName = s.Status.ToString()
+            statusName = s.Status
         }).ToList();
     }
 
@@ -90,8 +90,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             managerInterviewResult = managerInterviewTask.Result,
             currentStatus = new
             {
-                status = (int)link.Status,
-                statusName = link.Status.ToString()
+                status = link.Status,
             }
         };
     }
@@ -127,7 +126,7 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
         {
             idSupervisorApplication = link.IdSupervisorApplication,
             idStudentApplication = link.IdStudentApplication,
-            status = (int)link.Status
+            status = link.Status
         };
     }
 

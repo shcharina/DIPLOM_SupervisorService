@@ -74,8 +74,8 @@ public class InterviewService : IInterviewService
             idInterviewSlot  = id,
             result           = interview.Result,
             newStudentStatus = dto.Result
-                ? StudentSupervisorApplicationStatus.DocumentProcessing.ToString()
-                : StudentSupervisorApplicationStatus.Rejected.ToString(),
+                ? StudentSupervisorApplicationStatus.DocumentProcessing
+                : StudentSupervisorApplicationStatus.Rejected,
             message = dto.Result
                 ? "Собеседование пройдено, студент переведён в оформление документов"
                 : "Собеседование не пройдено, студент отклонён"

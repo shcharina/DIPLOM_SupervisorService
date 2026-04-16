@@ -243,7 +243,7 @@ public class InterviewSlotService : IInterviewSlotService
         {
             idInterval = interval.IdInterval,
             slotsCreated = slots.Count,
-            slotStatus = slotStatus.ToString(),
+            slotStatus = slotStatus,
             message = createdBySupervisor
                 ? "Интервал создан, слоты подтверждены"
                 : "Интервал создан, слоты отправлены на согласование руководителю"
