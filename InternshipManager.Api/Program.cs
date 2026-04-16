@@ -95,6 +95,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddMemoryCache();
+
 // CORS для Vue фронта
 builder.Services.AddCors(options =>
 {

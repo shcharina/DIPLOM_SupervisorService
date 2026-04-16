@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Caching.Memory;
+
 using InternshipManager.Api.DTOs.External;
 
 namespace InternshipManager.Api.Services;
@@ -6,13 +8,16 @@ public class ManagerApiClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ManagerApiClient> _logger;
+    private readonly IMemoryCache _cache;
 
     public ManagerApiClient(
         HttpClient httpClient,
-        ILogger<ManagerApiClient> logger)
+        ILogger<ManagerApiClient> logger,
+        IMemoryCache cache)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<EmployeeExternalDto?> GetSupervisorByIdAsync(EmployeeId id)
@@ -27,7 +32,6 @@ public class ManagerApiClient
             return await response.Content.ReadFromJsonAsync<EmployeeExternalDto>();
 
         }
-
         catch (Exception ex)
         {
             _logger.LogError("Сервис менеджера недоступен: {error}", ex.Message);
@@ -59,87 +63,106 @@ public class ManagerApiClient
 
     public async Task<List<SpecializationExternalDto>> GetSpecializationsAsync()
     {
-        try
+        return await _cache.GetOrCreateAsync("specializations", async entry =>
         {
-            var response = await _httpClient.GetAsync("/api/v1/Specialization/GetSpecializations");
-            response.EnsureSuccessStatusCode();
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            try
+            {
+                var response = await _httpClient
+                    .GetAsync("/api/v1/Specialization/GetSpecializations");
+                response.EnsureSuccessStatusCode();
 
-            return await response.Content
-                .ReadFromJsonAsync<List<SpecializationExternalDto>>()
-                   ?? new List<SpecializationExternalDto>();
-        }
-
-        catch (Exception ex)
-        {
-            _logger.LogError("Ошибка получения специализаций: {error}", ex.Message);
-            return new List<SpecializationExternalDto>();
-        }
+                return await response.Content
+                    .ReadFromJsonAsync<List<SpecializationExternalDto>>()
+                       ?? new List<SpecializationExternalDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка получения специализаций: {error}", ex.Message);
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return new List<SpecializationExternalDto>();
+            }
+        }) ?? new List<SpecializationExternalDto>();
     }
 
     public async Task<List<DepartmentExternalDto>> GetDepartmentsAsync()
     {
-        try
+        return await _cache.GetOrCreateAsync("departments", async entry =>
         {
-            var response = await _httpClient.GetAsync("/api/v1/Department/GetDepartments");
-            response.EnsureSuccessStatusCode();
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            try
+            {
+                var response = await _httpClient.GetAsync("/api/v1/Department/GetDepartments");
+                response.EnsureSuccessStatusCode();
 
-            return await response.Content
-                .ReadFromJsonAsync<List<DepartmentExternalDto>>()
-                   ?? new List<DepartmentExternalDto>();
-
-        }
-
-        catch (Exception ex)
-        {
-            _logger.LogError("Ошибка получения подразделений: {error}", ex.Message);
-            return new List<DepartmentExternalDto>();
-        }
-
+                return await response.Content
+                    .ReadFromJsonAsync<List<DepartmentExternalDto>>()
+                       ?? new List<DepartmentExternalDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка получения подразделений: {error}", ex.Message);
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return new List<DepartmentExternalDto>();
+            }
+        }) ?? new List<DepartmentExternalDto>();
     }
 
     public async Task<List<AddressExternalDto>> GetAddressesAsync(
         DepartmentId? departmentId = null)
     {
-        try
+        var cacheKey = departmentId.HasValue
+            ? $"addresses_dept_{departmentId}"
+            : "addresses_all";
+        return await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            var url = departmentId.HasValue
-                ? $"/api/v1/Address/GetAddressesByDepartment/{departmentId}"
-                : "/api/v1/Address/GetAddressesByDepartment";
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            try
+            {
+                var url = departmentId.HasValue
+                    ? $"/api/v1/Address/GetAddressesByDepartment/{departmentId}"
+                    : "/api/v1/Address/GetAddressesByDepartment";
 
-            var response = await _httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
 
-            return await response.Content
-                .ReadFromJsonAsync<List<AddressExternalDto>>()
-                   ?? new List<AddressExternalDto>();
+                return await response.Content
+                    .ReadFromJsonAsync<List<AddressExternalDto>>()
+                       ?? new List<AddressExternalDto>();
 
-        }
+            }
 
-        catch (Exception ex)
-        {
-            _logger.LogError("Ошибка получения адресов: {error}", ex.Message);
-            return new List<AddressExternalDto>();
-        }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка получения адресов: {error}", ex.Message);
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return new List<AddressExternalDto>();
+            }
+        }) ?? new List<AddressExternalDto>();
     }
 
     public async Task<List<ScheduledPracticeExternalDto>> GetScheduledPracticesAsync()
     {
-        try
+        return await _cache.GetOrCreateAsync("scheduled_practices", async entry =>
         {
-            var response = await _httpClient
-                .GetAsync("/api/v1/ScheduledPractice/GetScheduledPractices");
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            try
+            {
+                var response = await _httpClient
+                    .GetAsync("/api/v1/ScheduledPractice/GetScheduledPractices");
 
-            response.EnsureSuccessStatusCode();
-            return await response.Content
-                .ReadFromJsonAsync<List<ScheduledPracticeExternalDto>>()
-                   ?? new List<ScheduledPracticeExternalDto>();
-        }
-
-        catch (Exception ex)
-        {
-            _logger.LogError("Ошибка получения расписания практик: {error}", ex.Message);
-            return new List<ScheduledPracticeExternalDto>();
-        }
+                response.EnsureSuccessStatusCode();
+                return await response.Content
+                    .ReadFromJsonAsync<List<ScheduledPracticeExternalDto>>()
+                       ?? new List<ScheduledPracticeExternalDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка получения расписания практик: {error}", ex.Message);
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return new List<ScheduledPracticeExternalDto>();
+            }
+        }) ?? new List<ScheduledPracticeExternalDto>();
     }
 
     public async Task<TestingResultExternalDto?> GetTestingResultAsync(
