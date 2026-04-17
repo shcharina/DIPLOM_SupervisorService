@@ -136,6 +136,26 @@ public class StudentSupervisorApplicationRepository
             .ToListAsync();
     }
 
+    public async Task<List<StudentSupervisorApplication>> GetActiveByStudentExcludingAsync(
+        StudentApplicationId studentApplicationId,
+        SupervisorApplicationId excludeApplicationId)
+    {
+        // БЕЗ AsNoTracking — нам нужны tracked-сущности для модификации
+        return await _context.StudentSupervisorApplications
+            .Where(s =>
+                s.IdStudentApplication == studentApplicationId &&
+                s.IdSupervisorApplication != excludeApplicationId &&
+                s.Status != StudentSupervisorApplicationStatus.Rejected &&
+                s.Status != StudentSupervisorApplicationStatus.Accepted)
+            .ToListAsync();
+    }
+    
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+    
+
     // Для AcceptWithoutInterview / InviteToInterview / Reject:
     // получить конкретную связку студент-заявка
     public async Task<StudentSupervisorApplication?> GetLinkAsync(

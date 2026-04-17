@@ -133,4 +133,43 @@ public class StudentSupervisorApplicationController : ControllerBase
             return BadRequest(new { type = "business_error", detail = ex.Message });
         }
     }
+
+    [HttpPut("choose")]
+    public async Task<IActionResult> Choose(AssignStudentDto dto)
+    {
+        try
+        {
+            var result = await _service.ChooseAsync(dto);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { type = "business_error", detail = ex.Message });
+        }
+    }
+
+    [HttpPut("{supervisorApplicationId:int}/{studentApplicationId:int}/complete")]
+    public async Task<IActionResult> Complete(
+        SupervisorApplicationId supervisorApplicationId,
+        StudentApplicationId studentApplicationId)
+    {
+        try
+        {
+            var result = await _service.CompleteAsync(
+                supervisorApplicationId, studentApplicationId);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { type = "business_error", detail = ex.Message });
+        }
+    }
 }

@@ -29,4 +29,11 @@ public interface IStudentSupervisorApplicationService
     Task<object> RejectAsync(
         SupervisorApplicationId supervisorApplicationId,
         StudentApplicationId studentApplicationId);
+
+    Task<object> ChooseAsync(AssignStudentDto dto);
+
+    Task<object> CompleteAsync(
+        SupervisorApplicationId supervisorApplicationId,
+        StudentApplicationId studentApplicationId);
+
 }

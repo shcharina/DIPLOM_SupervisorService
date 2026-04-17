@@ -41,6 +41,13 @@ public interface IStudentSupervisorApplicationRepository
     Task<List<StudentSupervisorApplication>> GetByStudentAsync(
         StudentApplicationId studentApplicationId);
 
+    
+    Task<List<StudentSupervisorApplication>> GetActiveByStudentExcludingAsync(
+        StudentApplicationId studentApplicationId,
+        SupervisorApplicationId excludeApplicationId);
+        
+    Task SaveChangesAsync();
+
     Task<StudentSupervisorApplication?> GetLinkAsync(
         SupervisorApplicationId supervisorApplicationId,
         StudentApplicationId studentApplicationId);

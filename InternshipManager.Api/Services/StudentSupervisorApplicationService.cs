@@ -223,4 +223,80 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             message = "Студенту отказано"
         };
     }
+
+    public async Task<object> ChooseAsync(AssignStudentDto dto)
+    {
+        // 1. Получить выбранную связку (tracked)
+        var link = await _repository.GetLinkAsync(
+            dto.IdSupervisorApplication, dto.IdStudentApplication);
+        if (link == null)
+            throw new KeyNotFoundException("Связка студент-заявка не найдена");
+
+        // 2. Проверить статус
+        if (link.Status != StudentSupervisorApplicationStatus.DocumentProcessing)
+            throw new InvalidOperationException(
+                "Выбрать можно только заявку в статусе DocumentProcessing");
+
+        // 3. Получить все остальные активные связки студента (tracked)
+        var otherLinks = await _repository.GetActiveByStudentExcludingAsync(
+            dto.IdStudentApplication, dto.IdSupervisorApplication);
+
+        // 4. Перевести каждую в Rejected
+        foreach (var other in otherLinks)
+        {
+            other.Status = StudentSupervisorApplicationStatus.Rejected;
+        }
+
+        // 5. СНАЧАЛА сохранить — иначе CheckAndUpdateApplicationStatus
+        //    прочитает старые данные через AsNoTracking
+        await _repository.SaveChangesAsync();
+
+        // 6. Каскадная проверка статусов заявок руководителей
+        foreach (var other in otherLinks)
+        {
+            await _statusService.CheckAndUpdateApplicationStatus(
+                other.IdSupervisorApplication);
+        }
+
+        return new
+        {
+            idSupervisorApplication = dto.IdSupervisorApplication,
+            idStudentApplication = dto.IdStudentApplication,
+            status = StudentSupervisorApplicationStatus.DocumentProcessing,
+            rejectedCount = otherLinks.Count,
+            message = "Практика выбрана, остальные заявки отклонены"
+        };
+    }
+
+    public async Task<object> CompleteAsync(
+        SupervisorApplicationId supervisorApplicationId,
+        StudentApplicationId studentApplicationId)
+    {
+        // 1. Получить связку
+        var link = await _repository.GetLinkAsync(
+            supervisorApplicationId, studentApplicationId);
+        if (link == null)
+            throw new KeyNotFoundException("Связка студент-заявка не найдена");
+
+        // 2. Проверить статус
+        if (link.Status != StudentSupervisorApplicationStatus.DocumentProcessing)
+            throw new InvalidOperationException(
+                "Перевести в Accepted можно только из статуса DocumentProcessing");
+
+        // 3. Перевести в Accepted и сохранить
+        link.Status = StudentSupervisorApplicationStatus.Accepted;
+        await _repository.UpdateAsync(link);
+
+        // 4. Проверить, не набрала ли заявка руководителя нужное количество
+        await _statusService.CheckAndUpdateApplicationStatus(supervisorApplicationId);
+
+        return new
+        {
+            idSupervisorApplication = supervisorApplicationId,
+            idStudentApplication = studentApplicationId,
+            status = StudentSupervisorApplicationStatus.Accepted,
+            message = "Студент принят, практика оформлена"
+        };
+    }
+
 }
