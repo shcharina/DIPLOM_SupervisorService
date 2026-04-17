@@ -8,6 +8,8 @@ public class CreateSupervisorApplicationDto
     [Required]
     public EmployeeId SupervisorId { get; set; }          // кто руководитель
 
+    public EmployeeId? IdCreatedBy { get; set; }
+    
     public ScheduledPracticeId? IdScheduledPractice { get; set; }   // практика из расписания (необязательно)
 
     public SpecializationId? IdSpecialization { get; set; }      // специализация (если не из расписания)

@@ -102,6 +102,7 @@ public class SupervisorApplicationService : ISupervisorApplicationService
         var application = new SupervisorApplication
         {
             IdEmployee = dto.SupervisorId,
+            IdCreatedBy = dto.IdCreatedBy,
             IdSpecialization = idSpecialization,
             IdDepartment = dto.IdDepartment,
             IdAddress = dto.IdAddress,
