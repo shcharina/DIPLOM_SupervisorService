@@ -1,5 +1,6 @@
 using InternshipManager.Api.DTOs.StudentSupervisorApplication;
 using InternshipManager.Api.Enums;
+using InternshipManager.Api.DTOs.External;
 using InternshipManager.Api.Models.Supervisor;
 using InternshipManager.Api.Repositories.Interfaces;
 using InternshipManager.Api.Services.Interfaces;
@@ -71,23 +72,32 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             .GetStudentApplicationAsync(studentApplicationId);
         var questionnaireTask = _studentApi
             .GetQuestionnaireAsync(studentApplicationId);
-        var testingResultTask = _managerApi
-            .GetTestingResultAsync(studentApplicationId);
-        var managerInterviewTask = _managerApi
-            .GetManagerInterviewResultAsync(studentApplicationId);
+
+        // TODO: раскомментировать, когда Даниил реализует GET /api/v1/Testing/{id}
+        //var testingResultTask = _managerApi
+        //    .GetTestingResultAsync(studentApplicationId);
+
+        // TODO: раскомментировать, когда Даниил реализует получения результата собеседования менеджером по заявке студента    
+        //var managerInterviewTask = _managerApi
+        //    .GetManagerInterviewResultAsync(studentApplicationId);
 
         await Task.WhenAll(
             studentApplicationTask,
-            questionnaireTask,
-            testingResultTask,
-            managerInterviewTask);
+            questionnaireTask//,
+            // TODO: раскомментировать
+            //testingResultTask,
+            //managerInterviewTask
+        );
 
         return new
         {
             studentApplication = studentApplicationTask.Result,
             questionnaire = questionnaireTask.Result,
-            testingResult = testingResultTask.Result,
-            managerInterviewResult = managerInterviewTask.Result,
+            // TODO: вернуть закомментированное, убрать новое
+            //testingResult = testingResultTask.Result,
+            //managerInterviewResult = managerInterviewTask.Result,
+            testingResult = (TestingResultExternalDto?)null,
+            managerInterviewResult = (ManagerInterviewResultExternalDto?)null,
             currentStatus = new
             {
                 status = link.Status,
