@@ -111,19 +111,18 @@ public class ManagerApiClient
     public async Task<List<AddressExternalDto>> GetAddressesAsync(
         DepartmentId? departmentId = null)
     {
-        var cacheKey = departmentId.HasValue
-            ? $"addresses_dept_{departmentId}"
-            : "addresses_all";
+        if (!departmentId.HasValue)
+            return new List<AddressExternalDto>();
+
+        var cacheKey = $"addresses_dept_{departmentId}";
         return await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
             try
             {
-                var url = departmentId.HasValue
-                    ? $"/api/v1/Address/GetAddressesByDepartment/{departmentId}"
-                    : "/api/v1/Address/GetAddressesByDepartment";
-
-                var response = await _httpClient.GetAsync(url);
+                var response = await _httpClient.GetAsync(
+                    $"/api/v1/Address/GetAddressesByDepartment/{departmentId}"
+                );
                 response.EnsureSuccessStatusCode();
 
                 return await response.Content
@@ -131,7 +130,6 @@ public class ManagerApiClient
                        ?? new List<AddressExternalDto>();
 
             }
-
             catch (Exception ex)
             {
                 _logger.LogError("Ошибка получения адресов: {error}", ex.Message);

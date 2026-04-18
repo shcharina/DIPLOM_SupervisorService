@@ -134,7 +134,7 @@ public class StudentSupervisorApplicationController : ControllerBase
         }
     }
 
-    [HttpPut("choose")]
+    [HttpPut("{supervisorApplicationId:int}/{studentApplicationId:int}/choose")]
     public async Task<IActionResult> Choose(AssignStudentDto dto)
     {
         try
