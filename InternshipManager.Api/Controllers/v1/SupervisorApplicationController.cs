@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 using InternshipManager.Api.Enums;
 using InternshipManager.Api.DTOs.SupervisorApplication;
@@ -7,6 +8,7 @@ using InternshipManager.Api.Services.Interfaces;
 namespace InternshipManager.Api.Controllers;
 
 [ApiController]
+//[Authorize]
 [Asp.Versioning.ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 
@@ -46,6 +48,7 @@ public class SupervisorApplicationController : ControllerBase
         });
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(SupervisorApplicationId id)
     {
@@ -57,6 +60,7 @@ public class SupervisorApplicationController : ControllerBase
         return Ok(application);
     }
 
+    [AllowAnonymous]
     [HttpGet("active")]
     public async Task<IActionResult> GetActive(
         [FromQuery] int page = 1,

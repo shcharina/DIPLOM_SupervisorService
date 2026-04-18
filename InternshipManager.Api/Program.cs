@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Asp.Versioning;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 using InternshipManager.Api.Data;
 using InternshipManager.Api.Services;
@@ -97,6 +100,25 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddMemoryCache();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+});
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+
 // CORS для Vue фронта
 builder.Services.AddCors(options =>
 {
@@ -118,6 +140,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowVue");
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

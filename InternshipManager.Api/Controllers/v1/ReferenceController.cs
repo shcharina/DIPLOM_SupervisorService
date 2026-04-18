@@ -1,11 +1,12 @@
-using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 using InternshipManager.Api.Services;
 
 namespace InternshipManager.Api.Controllers; 
 
 [ApiController]
+//[Authorize]
 [Asp.Versioning.ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 

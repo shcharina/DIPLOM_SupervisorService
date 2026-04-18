@@ -20,6 +20,27 @@ public class ManagerApiClient
         _cache = cache;
     }
 
+    
+    public async Task<EmployeeExternalDto?> LoginAsync(string login, string passwordHash)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync(
+                "/api/v1/Employee/LoginAsync",
+                new { login, passwordHash });
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return await response.Content.ReadFromJsonAsync<EmployeeExternalDto>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Ошибка авторизации: {error}", ex.Message);
+            return null;
+        }
+    }
+
     public async Task<EmployeeExternalDto?> GetSupervisorByIdAsync(EmployeeId id)
     {
         try

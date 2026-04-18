@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 using InternshipManager.Api.DTOs.Interview;
 using InternshipManager.Api.Services.Interfaces;
@@ -6,6 +7,7 @@ using InternshipManager.Api.Services.Interfaces;
 namespace InternshipManager.Api.Controllers;
 
 [ApiController]
+//[Authorize]
 [Asp.Versioning.ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class InterviewController : ControllerBase

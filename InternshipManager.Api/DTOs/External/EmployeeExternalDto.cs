@@ -8,4 +8,6 @@ public class EmployeeExternalDto
     public string? Patronymic { get; set; }
     public string Position { get; set; } = string.Empty;
     public int Role { get; set; }  // 1 = Supervisor, 2 = Manager
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
 }

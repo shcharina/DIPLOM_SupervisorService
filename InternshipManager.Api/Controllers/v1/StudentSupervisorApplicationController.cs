@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 using InternshipManager.Api.Enums;
 using InternshipManager.Api.DTOs.StudentSupervisorApplication;
@@ -7,6 +8,7 @@ using InternshipManager.Api.Services.Interfaces;
 namespace InternshipManager.Api.Controllers;
 
 [ApiController]
+//[Authorize]
 [Asp.Versioning.ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class StudentSupervisorApplicationController : ControllerBase
@@ -53,6 +55,7 @@ public class StudentSupervisorApplicationController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("assign")]
     public async Task<IActionResult> AssignStudent([FromBody] AssignStudentDto dto)
     {
