@@ -308,5 +308,4 @@ public class StudentSupervisorApplicationService : IStudentSupervisorApplication
             message = "Студент принят, практика оформлена"
         };
     }
-
 }
